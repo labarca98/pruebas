@@ -1,0 +1,1100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:pubmed-system-apiraml="http://www.mulesoft.org/schema/mule/pubmed-system-apiraml" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/pubmed-system-apiraml http://www.mulesoft.org/schema/mule/pubmed-system-apiraml/current/mule-pubmed-system-apiraml.xsd http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+    <flow name="api-main">
+        <http:listener path="/api/*" config-ref="servier-sfdc-xp-api-httpsListconfig">
+            <ee:repeatable-file-store-stream inMemorySize="512" />
+            <http:response statusCode="#[vars.httpStatus]">
+                <http:headers><![CDATA[#[output application/java
+---
+{
+	"OData-Version" : 2.0,
+	"DataServiceVersion" : 2.0,
+	"MaxDataServiceVersion" : 2.0
+}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus]">
+                <http:headers><![CDATA[#[output application/java
+---
+{
+	"OData-Version" : 2.0,
+	"DataServiceVersion" : 2.0,
+	"MaxDataServiceVersion" : 2.0
+}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <logger level="INFO" doc:name="Logger" doc:id="b12ef12f-dcc4-47f3-9e58-15a9b15783a1" message="#[attributes.method ++ ' ' ++ attributes.requestUri]" />
+        <apikit:router doc:name="APIkit Router" doc:id="8ca2ba0b-178c-4a79-9a6a-519b5a7819ce" config-ref="servier-sfdc-xp-api-config" />
+        <logger level="INFO" doc:name="Logger" doc:id="ed269958-d029-4a67-9436-0da1420439ea" message="#['Responding with status code ' ++ (vars.httpStatus default '200')]" />
+        <error-handler ref="globalError_Handler" />
+    </flow>
+    <flow name="get:\jobs\(jobId)\batches:servier-sfdc-xp-api-config" doc:id="aafc7ff5-d2b8-4168-9f84-45a141d36561">
+        <salesforce:batch-info-list doc:name="Batch info list" doc:id="069248e0-df5f-4a36-af2a-768600fb7ef0" config-ref="salesforceConfig" jobId="#[attributes.uriParams.jobId]" contentType="JSON"/>
+        <ee:transform doc:name="Java to JSON" doc:id="69339868-378f-4abd-a71a-c79516c700eb">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\jobs\(jobId)\batches\(batchId):servier-sfdc-xp-api-config" doc:id="b23e7515-3f31-492b-a390-049ef04db6e4">
+        <salesforce:batch-info doc:name="Batch info" doc:id="395c1d05-d50c-40ca-b9fc-937bf4da4037" config-ref="salesforceConfig" contentType="JSON">
+            <salesforce:batch-to-retrieve><![CDATA[#[output application/java
+---
+{
+	id: attributes.uriParams.batchId,
+	jobId: attributes.uriParams.jobId
+} as Object {
+	class : "org.mule.extension.salesforce.api.bulk.BatchInfo"
+}]]]></salesforce:batch-to-retrieve>
+        </salesforce:batch-info>
+        <ee:transform doc:name="Java to JSON" doc:id="1d4d9367-7588-4561-9f9f-2511c55fa363">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\jobs\(jobId)\batches\(batchId)\results:servier-sfdc-xp-api-config" doc:id="cdcfc0e7-f973-4760-b5e8-a4a2eab1016f">
+        <salesforce:batch-result-stream doc:name="Batch result stream" doc:id="48d7295c-2125-4903-a616-60e844cbf2c6" config-ref="salesforceConfig">
+            <salesforce:batch-to-retrieve><![CDATA[#[output application/java
+---
+{
+	id: attributes.uriParams.batchId,
+	jobId: attributes.uriParams.jobId
+} as Object {
+	class : "org.mule.extension.salesforce.api.bulk.BatchInfo"
+}]]]></salesforce:batch-to-retrieve>
+        </salesforce:batch-result-stream>
+    </flow>
+    <flow name="get:\jobs-v2\(jobId)\successful-results:servier-sfdc-xp-api-config" doc:id="8252e4ed-89bf-4d31-9fb8-eaca359b49a9">
+        <logger level="INFO" doc:name="Logger" doc:id="7746d6e3-8af0-4448-93e5-2dbb4792b6f1" message="lulu" />
+        <salesforce:retrieve-job-successful-results-bulk-v2 doc:name="Retrieve job successful results bulk v 2" doc:id="f9b4eb0f-cf08-4143-8632-89d7722d079f" config-ref="salesforceConfig" id="#[attributes.uriParams.jobId]" />
+        <logger level="INFO" doc:name="Logger" doc:id="01286b78-7ad6-4570-ac03-0da534ec6751" message="toto" />
+        <ee:transform doc:name="Transform Message" doc:id="8733602c-d39c-4f27-809d-277f2b55e1fb">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\jobs-v2\(jobId)\failed-results:servier-sfdc-xp-api-config" doc:id="79a0f3ea-d541-4927-a42d-77c119c72592">
+        <logger level="INFO" doc:name="Logger" doc:id="5025047d-591f-414c-a8cc-793c9ccad69a" message="lulu" />
+        <salesforce:retrieve-job-failed-results-bulk-v2 doc:name="Retrieve job failed results bulk v 2" doc:id="694af2b3-fb7a-4c90-8e1c-baf2f8c36e28" config-ref="salesforceConfig" id="#[attributes.uriParams.jobId]" />
+        <logger level="INFO" doc:name="Logger" doc:id="6de4b3e7-3ac9-4944-b6bb-ca371e733d7e" message="toto" />
+        <ee:transform doc:name="Transform Message" doc:id="7852b478-9593-48cc-a03a-851796a36a7b">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\articles-pubmeds:servier-sfdc-xp-api-config">
+        <ee:transform doc:name="Set Variables" doc:id="9f5f60b3-12a6-47f9-ae89-15d081e45bae">
+            <ee:message />
+            <ee:variables>
+                <ee:set-variable variableName="doSearch"><![CDATA[attributes.queryParams.doSearch]]></ee:set-variable>
+                <ee:set-variable variableName="similarLink"><![CDATA["https://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed&from_uid="]]></ee:set-variable>
+                <ee:set-variable variableName="top"><![CDATA[attributes.queryParams.top]]></ee:set-variable>
+                <ee:set-variable variableName="filter"><![CDATA[attributes.queryParams.filter]]></ee:set-variable>
+                <ee:set-variable variableName="select"><![CDATA[attributes.queryParams.select]]></ee:set-variable>
+                <ee:set-variable variableName="orderby"><![CDATA[attributes.queryParams.orderby]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" doc:name="doSearch key" doc:id="2cf3aaab-11a4-46c7-a639-730b7b36db57" message="#['Search key : [' ++ vars.doSearch ++ ']']" />
+        <http:request method="GET" doc:name="GET Articles[] from PubMed" doc:id="f3bf1f5a-db59-4642-9207-19210d731423" config-ref="Pubmed-httpsReqconfig" path="/articles" responseTimeout="120000">
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	"doSearch" : vars.doSearch,
+	("top": vars.top) if !isEmpty(vars.top),
+	("filter": vars.filter) if !isEmpty(vars.filter),
+	("select": vars.select) if !isEmpty(vars.select),
+	("orderby": vars.orderby) if !isEmpty(vars.orderby)
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Articles[] result to JSON for OData" doc:id="a3053398-3123-4657-ab15-bca8466503f1">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json skipNullOn="everywhere"
+---
+{
+	"entries": 
+		payload map (Article, indexOfArticle) -> {
+			PMID: Article.PMID,
+	 		Title: Article.Title,
+	 		Authors: if(Article.Authors !=null) Article.Authors joinBy ", " else null ,
+	 		DateRef: Article.DateRef,
+	 		SimilarArticlesLink: Article.SimilarArticlesLink,
+	 		ArticleLink: Article.ArticleLink
+		}
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="484f088b-59b6-4389-b3db-43742376c96c" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+    <flow name="get:\articles-pubchems:servier-sfdc-xp-api-config">
+        <ee:transform doc:name="Set doSearch var" doc:id="d6ef0f84-1abf-4b1f-8f53-0d99b0dd58b3">
+            <ee:message />
+            <ee:variables>
+                <ee:set-variable variableName="doSearch"><![CDATA[if(!isEmpty(attributes.queryParams.filter))
+	(splitBy(attributes.queryParams.filter, " ")[2])[1 to (sizeOf(splitBy(attributes.queryParams.filter, " ")[2]) - 2)]
+else
+	attributes.queryParams.doSearch]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" doc:name="doSearch var" doc:id="f9b4f282-37e3-4367-8142-0fa599177e9a" message="#['doSearch variable query : [' ++ vars.doSearch ++ ']']" />
+        <http:request method="GET" doc:name="GET Article of PubChem" doc:id="bfb9260d-77f9-4262-aa48-c560d46b4e5f" config-ref="Pubchem-httpsReqconfig" path="/articles" responseTimeout="120000">
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	"doSearch" : vars.doSearch
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData output JSON" doc:id="d41967e3-1e58-47e2-a7b6-9fe455533dac">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"entries": [payload]
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="b38ae1d3-a1c5-4fbb-a66b-bd842f85c673" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+    <flow name="get:\articles-chembls:servier-sfdc-xp-api-config">
+        <ee:transform doc:name="Set doSearch var" doc:id="670ec3a4-6611-4d05-9d64-67c202ddc5b6">
+            <ee:message />
+            <ee:variables>
+                <ee:set-variable variableName="doSearch"><![CDATA[if(!isEmpty(attributes.queryParams.filter))
+	(splitBy(attributes.queryParams.filter, " ")[2])[1 to (sizeOf(splitBy(attributes.queryParams.filter, " ")[2]) - 2)]
+else
+	attributes.queryParams.doSearch]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" doc:name="doSeach var" doc:id="9eff9e56-700d-4277-9abb-6ad855963ccd" message="#['doSearch variable query : [' ++ vars.doSearch ++ ']']" />
+        <http:request method="GET" doc:name="GET Articles of ChemBle" doc:id="b0498f4f-35c5-45d8-9abe-7ee4a29b8181" config-ref="Chembl-httpsReqconfig" path="/articles" responseTimeout="120000">
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	"doSearch" : vars.doSearch
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData output JSON" doc:id="b72bb247-5ff8-4334-a17c-138503c1a7f5">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"entries": [
+		{
+			doSearch: vars.doSearch as String,
+			allResultsUrl: payload.allResultsUrl as String,
+			allResultsCount: payload.allResultsCount as Number,
+			compoundsUrl: payload.compoundsUrl as String,
+			compoundsCount: payload.compoundsCount as Number,
+			targetsUrl: payload.targetsUrl as String,
+			targetsCount: payload.targetsCount as Number,
+			assaysUrl: payload.assaysUrl as String,
+			assaysCount: payload.assaysCount as Number,
+			documentsUrl: payload.documentsUrl as String,
+			documentsCount: payload.documentsCount as Number,
+			cellsUrl: payload.cellsUrl as String,
+			cellsCount: payload.cellsCount as Number,
+			tissuesUrl: payload.tissuesUrl as String,
+			tissuesCount: payload.tissuesCount as Number 
+		}
+	]
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="dc8375c0-2352-492e-bc8d-ca84485b3fb2" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+    <flow name="post:\protocol-versions:application\json:servier-sfdc-xp-api-config">
+        <ee:transform doc:name="Payload as Java" doc:id="97db9535-6bf0-4640-9346-0eebf9e40f3a">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <ee:transform doc:name="Java to JSON for bulk v1 job" doc:id="6d04ad69-3744-43de-bb13-6bbc9ef7c43f">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map (ProtocolVersion, indexOfProtocol) -> {
+	Name: ProtocolVersion.Name as String,
+	ProtocolDescription__c: ProtocolVersion.ProtocolDescription__c as String,
+	ProtocolVersionExternalId__c: ProtocolVersion.ProtocolVersionExternalId__c as String,
+	Active__c: ProtocolVersion.Active__c as Boolean,
+	Version__c: ProtocolVersion.Version__c as Number,
+	ProtocolName__c: ProtocolVersion.ProtocolName__c as String,
+	Project__r: ProtocolVersion.Project__r,
+	ProtocolDescriptionLong__c: ProtocolVersion.ProtocolDescriptionLong__c as String,
+	Profiling__c: ProtocolVersion.Profiling__c as String,
+	TypeName__c: ProtocolVersion.TypeName__c as String default "",
+	TypeLabel__c: ProtocolVersion.TypeLabel__c as String default "",
+	TECHProtocolVersionKey__c: ProtocolVersion.TECHProtocolVersionKey__c as String default "",
+	Label__c: ProtocolVersion.Label__c as String default "",
+	Title__c: ProtocolVersion.Title__c as String default "",
+	Comments__c: ProtocolVersion.Comments__c as String default ""
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <salesforce:create-job operation="upsert" doc:name="Upsert ProtocolVersion" doc:id="3756481c-67d6-4cef-92b1-2117771f4f22" config-ref="salesforceConfig" type="ProtocolVersion__c" target="jobInfo">
+            <salesforce:create-job-request><![CDATA[#[output application/java
+---
+{
+	externalIdFieldName: "ProtocolVersionExternalId__c",
+	concurrencyMode: "Parallel"
+} as Object {
+	class : "org.mule.extension.salesforce.api.bulk.CreateJobRequest"
+}]]]></salesforce:create-job-request>
+        </salesforce:create-job>
+        <salesforce:create-batch doc:name="Create batch" doc:id="c2b1ced2-b51f-4b67-a368-45b646b98f5d" config-ref="salesforceConfig" jobInfoBatch="#[vars.jobInfo]" target="batchInfo" />
+        <salesforce:close-job doc:name="Close job" doc:id="765731e7-bbf2-49a6-ab45-8708a91371d5" config-ref="salesforceConfig" jobId="#[vars.jobInfo.id]" />
+        <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="c35dffdf-7611-444e-9b0d-23276359e58b" doc:name="Salesforce response">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+vars.batchInfo]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Logger" doc:id="79fd9d50-1066-407e-81b5-535636a354fc" message="#[payload]" />
+    </flow>
+    <flow name="post:\protocol-parameters:application\json:servier-sfdc-xp-api-config">
+        <ee:transform xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd  http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="e56714c8-bae3-427f-a7c7-a9bd3bb95f68" doc:name="Payload to Java">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <ee:transform doc:name="Java to JSON for bulk v1 job" doc:id="c40c9ba1-29ef-47b6-9f0d-1fc4ae3e5038">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map (ProtocolParam, indexOfPP) -> {
+	Name: ProtocolParam.Name as String,
+	ProtocolVersion__r: { "ProtocolVersionExternalId__c" : ProtocolParam.ProtocolVersion__c as String },
+	ProtocolParameterExternalId__c: ProtocolParam.ProtocolParameterExternalId__c as String,
+	ProtocolParameterShortName__c: ProtocolParam.ProtocolParameterShortName__c as String,
+	ProtocolParameterDescription__c: ProtocolParam.ProtocolParameterDescription__c as String,
+	ConcentrationUnit__c: ProtocolParam.ConcentrationUnit__c as String,
+	Factor__c: ProtocolParam.Factor__c as String,
+	FactorUnit__c: ProtocolParam.FactorUnit__c as String,
+	ParameterUnit__c: ProtocolParam.ParameterUnit__c as String
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <salesforce:create-job operation="upsert" type="ProtocolParameter__c" doc:name="Upsert ProtocolParameter" doc:id="c44fcf87-3cac-4673-a3c7-21b5bbbd4603" config-ref="salesforceConfig" target="jobInfo">
+            <salesforce:create-job-request><![CDATA[#[output application/java
+---
+{
+	externalIdFieldName: "ProtocolParameterExternalId__c",
+	concurrencyMode: "Parallel"
+} as Object {
+	class : "org.mule.extension.salesforce.api.bulk.CreateJobRequest"
+}]]]></salesforce:create-job-request>
+        </salesforce:create-job>
+        <salesforce:create-batch doc:name="Create batch" doc:id="1ec131eb-f4b1-44db-80ff-452d6a913f58" config-ref="salesforceConfig" jobInfoBatch="#[vars.jobInfo]" target="batchInfo" />
+        <salesforce:close-job doc:name="Close job" doc:id="4865a95c-b61a-42e3-a0e5-7cb5390eb383" config-ref="salesforceConfig" jobId="#[vars.jobInfo.id]" />
+        <ee:transform doc:name="Salesforce response" doc:id="a823736b-a698-4037-af2f-80bb46316786">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+vars.batchInfo]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Logger" doc:id="304e611f-1344-43e9-8288-9dc35e7af831" message="#[payload]" />
+    </flow>
+    <flow name="get:\study-results:servier-sfdc-xp-api-config">
+        <ee:transform doc:name="Set variables TOP, SELECT and FILTER" doc:id="7955c474-ce61-4f4a-9747-fb9fd19e9c01">
+            <ee:variables>
+                <ee:set-variable variableName="top"><![CDATA[attributes.queryParams.top]]></ee:set-variable>
+                <ee:set-variable variableName="select"><![CDATA[attributes.queryParams.select]]></ee:set-variable>
+                <ee:set-variable variableName="filter"><![CDATA[attributes.queryParams.filter]]></ee:set-variable>
+                <ee:set-variable variableName="doSearch"><![CDATA[attributes.queryParams.doSearch]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <http:request method="GET" doc:name="GET StudyResults from ICR" doc:id="94d68c80-99f5-4879-b334-881ab72a44fd" config-ref="dbs-process-api-httpsReqconfig" path="/icr/study-results" responseTimeout="1200000">
+            <http:headers><![CDATA[#[output application/java
+---
+{
+	"accept" : "application/csv"
+}]]]></http:headers>
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	("top" : vars.top) if (!isEmpty(vars.top)),
+	("select" : vars.select) if (!isEmpty(vars.select)),
+	("filter" : vars.filter) if (!isEmpty(vars.filter)),
+	("doSearch" : vars.doSearch) if (!isEmpty(vars.doSearch))
+}]]]></http:query-params>
+        </http:request>
+        <!--         <ee:transform doc:name="Map CSV input to JSON camelize" doc:id="41b757a8-9b9a-4499-af11-b0d593808c32"> -->
+        <!--             <ee:message> -->
+        <!--                 <ee:set-payload><![CDATA[%dw 2.0 -->
+        <!-- output application/json -->
+        <!-- import * from dw::core::Strings -->
+        <!-- payload map { -->
+        <!-- 	($ mapObject (value, key) -> { -->
+        <!-- 		(camelize(lower(key))): value default "" -->
+        <!-- 	}) -->
+        <!-- }]]></ee:set-payload> -->
+        <!--             </ee:message> -->
+        <!--         </ee:transform> -->
+        <!--         <ee:transform doc:name="Set OData output (JSON)" doc:id="ebd8de36-212e-4b92-8bfb-6a60e5a32946"> -->
+        <!--             <ee:message> -->
+        <!--                 <ee:set-payload><![CDATA[%dw 2.0 -->
+        <!-- output application/json -->
+        <!-- { -->
+        <!-- 	"entries": payload map { -->
+        <!-- 		($ mapObject (value, key) -> {  -->
+        <!-- 			(key): value -->
+        <!-- 		}) -->
+        <!-- 	} -->
+        <!-- }]]></ee:set-payload> -->
+        <!--             </ee:message> -->
+        <!--         </ee:transform> -->
+        <!--         <logger level="INFO" doc:name="Success message" doc:id="19496c5a-7279-4d22-af9a-dd2ba19775e3" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" /> -->
+        <logger level="INFO" doc:name="Success message" doc:id="c891b6e5-1d6c-4b81-b78a-9958311c8015" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload)]" />
+    </flow>
+    <flow name="get:\molecules-merlins:servier-sfdc-xp-api-config">
+        <ee:transform doc:name="Set variables TOP, SELECT and FILTER" doc:id="9ff8ab54-b190-4932-802b-e8561fb4b2dd">
+            <ee:variables>
+                <ee:set-variable variableName="top"><![CDATA[attributes.queryParams.top]]></ee:set-variable>
+                <ee:set-variable variableName="select"><![CDATA[attributes.queryParams.select]]></ee:set-variable>
+                <ee:set-variable variableName="filter"><![CDATA[attributes.queryParams.filter]]></ee:set-variable>
+                <ee:set-variable variableName="doSearch"><![CDATA[attributes.queryParams.doSearch]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <http:request method="GET" doc:name="GET Molecules from MERLIN" doc:id="ab98e8a2-a6e1-43b6-9e74-34cc3d34cd90" config-ref="dbs-process-api-httpsReqconfig" path="/merlin/molecules" responseTimeout="120000">
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	("top" : vars.top) if (!isEmpty(vars.top)),
+	("select" : vars.select) if (!isEmpty(vars.select)),
+	("filter" : vars.filter) if (!isEmpty(vars.filter)),
+	("doSearch" : vars.doSearch) if (!isEmpty(vars.doSearch))
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData output (JSON)" doc:id="ffec62e8-f491-4cb7-9aa3-1149fe43cd09">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"entries": payload map {
+		($ mapObject (value, key) -> { 
+			(key): value
+		})
+	}
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="81170472-25c7-45b0-a178-387c37c48a16" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+    <flow name="get:\series-merlins:servier-sfdc-xp-api-config">
+        <ee:transform doc:name="Set variables TOP, SELECT and FILTER" doc:id="af3c1049-c904-40c2-b8d4-0c31b3d950d4">
+            <ee:variables>
+                <ee:set-variable variableName="top"><![CDATA[attributes.queryParams.top]]></ee:set-variable>
+                <ee:set-variable variableName="select"><![CDATA[attributes.queryParams.select]]></ee:set-variable>
+                <ee:set-variable variableName="filter"><![CDATA[attributes.queryParams.filter]]></ee:set-variable>
+                <ee:set-variable variableName="doSearch"><![CDATA[attributes.queryParams.doSearch]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <http:request method="GET" doc:name="GET Series from MERLIN" doc:id="e7805a49-068e-44e3-a5f2-2c722ad68693" config-ref="dbs-process-api-httpsReqconfig" path="/merlin/series" responseTimeout="120000">
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	("top" : vars.top) if (!isEmpty(vars.top)),
+	("select" : vars.select) if (!isEmpty(vars.select)),
+	("filter" : vars.filter) if (!isEmpty(vars.filter)),
+	("doSearch" : vars.doSearch) if (!isEmpty(vars.doSearch))
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData output (JSON)" doc:id="be5a2350-6f7f-4422-a081-cff3dc6ed2fa">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"entries": payload map {
+		($ mapObject (value, key) -> { 
+			(key): value
+		})
+	}
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="cd5cf45b-d69a-4623-80ae-25c54ace8eeb" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+    <flow name="get:\molecules-herokus:servier-sfdc-xp-api-config">
+        <ee:transform doc:name="Set queryStrg to send queries" doc:id="e405a1f5-6bc1-4ebc-8373-ffa27362442c">
+            <ee:variables>
+                <!-- 				<ee:set-variable variableName="queryStrg" ><![CDATA[("?" ++ ([vars.select,vars.filter,vars.top,vars.count] joinBy "&")) default ""]]></ee:set-variable> -->
+                <ee:set-variable variableName="queryStrg"><![CDATA[("?\$" ++ 
+	(attributes.queryString) replace '&' with '&\$'
+) replace ' ' with '+' default ""]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <http:request method="GET" doc:name="GET Molecules from Heroku" doc:id="6451f2cd-191e-49eb-aa39-4292a7e2a354" config-ref="Heroku-httpsReqconfig" path="#['/molecules' ++ vars.queryStrg]" responseTimeout="120000" />
+        <ee:transform doc:name="Set OData 2.0 output (JSON)" doc:id="2137017f-6034-49cb-86c0-549a6a093ccf">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	entries: payload
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="5ec061e7-3ef3-48bc-aecc-b860a31a7624" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+    <flow name="get:\entries-keggs:servier-sfdc-xp-api-config">
+        <ee:transform doc:name="doSearch &amp; database Variables" doc:id="5a90d4ad-53db-448d-ae1c-7336c72fa62b">
+            <ee:message />
+            <ee:variables>
+                <ee:set-variable variableName="doSearch"><![CDATA[attributes.queryParams.doSearch]]></ee:set-variable>
+                <ee:set-variable variableName="database"><![CDATA[attributes.queryParams.database]]></ee:set-variable>
+                <ee:set-variable variableName="top"><![CDATA[attributes.queryParams.top]]></ee:set-variable>
+                <ee:set-variable variableName="filter"><![CDATA[attributes.queryParams.filter]]></ee:set-variable>
+                <ee:set-variable variableName="select"><![CDATA[attributes.queryParams.select]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" doc:name="doSearch &amp; database variables logs" doc:id="fc3aef3f-79a0-4470-91ee-ab3b771c6da0" message="#['doSearch : [' ++ vars.doSearch ++ ']']" />
+        <http:request method="GET" doc:name="GET Entries from Kegg" doc:id="b411541e-321f-4101-aadf-936bb2b724c4" config-ref="Kegg-httpsReqconfig" path="/entries" responseTimeout="120000">
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	"doSearch" : vars.doSearch,
+	("filter" : vars.filter) if (!isEmpty(vars.filter)),
+	("select" : vars.select) if (!isEmpty(vars.select)),
+	("top" : vars.top) if (!isEmpty(vars.top)),
+	("database" : vars.database) if (!isEmpty(vars.database))
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData 2.0 output (JSON)" doc:id="4e41029e-c46c-42ee-a2d5-e208e0e79616">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"entries": payload
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="a91bf041-084f-49e4-819b-764c500b49d0" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+    <flow name="get:\entries-uniprots:servier-sfdc-xp-api-config">
+        <ee:transform doc:name="doSearch &amp; top Variables" doc:id="1174a825-0ee6-428c-a6a6-a3a78a84b8fd">
+            <ee:message />
+            <ee:variables>
+                <ee:set-variable variableName="doSearch"><![CDATA[attributes.queryParams.doSearch]]></ee:set-variable>
+                <ee:set-variable variableName="top"><![CDATA[attributes.queryParams.top]]></ee:set-variable>
+                <ee:set-variable variableName="filter"><![CDATA[attributes.queryParams.filter]]></ee:set-variable>
+                <ee:set-variable variableName="select"><![CDATA[attributes.queryParams.select]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" doc:name="doSeach &amp; top (if exists) logs" doc:id="1ab1863a-91bb-4bb8-a2d0-9eab42ee1e34" message="#['doSearch : [' ++ vars.doSearch ++ ']' ++ ( ' - top : [' ++ vars.top ++ ']' default '')]" />
+        <http:request method="GET" doc:name="GET Entries from UniProt" doc:id="a591ce6a-7c70-4a44-a4e1-34b90b381f73" config-ref="UniProt-httpsReqconfig" path="/entries" responseTimeout="120000">
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	"doSearch" : vars.doSearch,
+	"top" : vars.top,
+	"filter": vars.filter,
+	"select": vars.select
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData 2.0 output (JSON)" doc:id="22ec2eef-443e-4d05-be24-5bf7c5b19f80">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"entries": payload
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="fa91c6ae-f793-4857-91ae-d3b423530fc8" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+    <flow name="get:\entries-uniprots\(id):servier-sfdc-xp-api-config">
+        <ee:transform doc:id="b4c5999c-eaa3-4f3c-ae57-c513e2358df5">
+            <ee:variables>
+                <ee:set-variable variableName="id"><![CDATA[attributes.uriParams.id]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" message="#['get:\entries-uniprots\(' ++ vars.id ++ '):servier-sfdc-xp-api-config']" doc:name="ID log" />
+        <http:request method="GET" doc:name="GET an Entry from UniProt via ID" doc:id="5b8a3cd1-fd2e-4208-ae6f-686499db0ff4" config-ref="UniProt-httpsReqconfig" path="/entries/{id}" responseTimeout="120000">
+            <http:uri-params><![CDATA[#[output application/java
+---
+{
+	"id" : vars.id
+}]]]></http:uri-params>
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	"doSearch" : vars.doSearch,
+	"top" : vars.top
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData 2.0 output (JSON)" doc:id="4705f97a-20bd-44bc-9e47-a91470140bca">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"entries": [payload]
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="18fc1c32-d09c-4561-979f-cbcc333c919c" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+    <flow name="get:\studies-seeds:servier-sfdc-xp-api-config">
+        <ee:transform doc:name="Set variables TOP, SELECT and FILTER" doc:id="20f5d4bf-b3bf-4870-b17c-8e7a192f13f5">
+            <ee:variables>
+                <ee:set-variable variableName="top"><![CDATA[attributes.queryParams.top]]></ee:set-variable>
+                <ee:set-variable variableName="select"><![CDATA[attributes.queryParams.select]]></ee:set-variable>
+                <ee:set-variable variableName="filter"><![CDATA[attributes.queryParams.filter]]></ee:set-variable>
+                <ee:set-variable variableName="doSearch"><![CDATA[attributes.queryParams.doSearch]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <http:request method="GET" doc:name="GET Studies from SEED" doc:id="0739f31f-759b-40ed-845b-93140884685d" config-ref="dbs-process-api-httpsReqconfig" path="/seed/studies" responseTimeout="120000">
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	("top" : vars.top) if (!isEmpty(vars.top)),
+	("select" : vars.select) if (!isEmpty(vars.select)),
+	("filter" : vars.filter) if (!isEmpty(vars.filter)),
+	("doSearch" : vars.doSearch) if (!isEmpty(vars.doSearch))
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData output (JSON)" doc:id="254bf6e8-e629-43f5-b03e-6dc6a699d0fc">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"entries": payload map {
+		($ mapObject (value, key) -> { 
+			(key): value
+		})
+	}
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="257c2b03-22ee-49e5-8fa9-eb60aa6bb45e" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+    <flow name="get:\links-spirs:servier-sfdc-xp-api-config">
+        <ee:transform doc:name="Set variables TOP, SELECT, FILTER and DOSEARCH" doc:id="4d5a2bf0-8467-490a-9996-956eb9980328">
+            <ee:variables>
+                <ee:set-variable variableName="top"><![CDATA[attributes.queryParams.top]]></ee:set-variable>
+				<ee:set-variable variableName="filter" ><![CDATA[attributes.queryParams.filter]]></ee:set-variable>
+				<ee:set-variable variableName="select" ><![CDATA[attributes.queryParams.select]]></ee:set-variable>
+				<ee:set-variable variableName="doSearch" ><![CDATA[attributes.queryParams.doSearch]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <http:request method="GET" doc:name="GET Links from SPIR" doc:id="cb104e29-a81c-4d3c-bbec-46a44b9983f1" config-ref="dbs-process-api-httpsReqconfig" path="/spir/links" responseTimeout="120000">
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	("top" : vars.top) if (!isEmpty(vars.top)),
+	("filter" : vars.filter) if (!isEmpty(vars.filter)),
+	("select" : vars.select) if (!isEmpty(vars.select)),
+	("doSearch" : vars.doSearch) if (!isEmpty(vars.doSearch))
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData output (JSON)" doc:id="2542c3ba-17bb-44a4-9d87-79ae74ed10e9">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"entries": payload map {
+		($ mapObject (value, key) -> { 
+			(key): value
+		})
+	}
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="9c494b0d-a3c9-4ac1-ada7-018c0b9ba3e8" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+    <flow name="get:\pdf-file-spirs:servier-sfdc-xp-api-config">
+        <ee:transform doc:name="Set variables TOP, SELECT, FILTER and DOSEARCH" doc:id="dde03ffb-8ce0-4f54-a740-1b20558c8908">
+            <ee:variables>
+				<ee:set-variable variableName="top" ><![CDATA[attributes.queryParams.top]]></ee:set-variable>
+				<ee:set-variable variableName="select" ><![CDATA[attributes.queryParams.select]]></ee:set-variable>
+				<ee:set-variable variableName="filter" ><![CDATA[attributes.queryParams.filter]]></ee:set-variable>
+				<ee:set-variable variableName="doSearch" ><![CDATA[attributes.queryParams.doSearch]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <http:request method="GET" doc:name="GET PDF File from SPIR" doc:id="b590a26a-0cab-4006-93ff-b6c3fa8838c8" config-ref="dbs-process-api-httpsReqconfig" path="/spir/pdf-file" responseTimeout="120000">
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	("top" : vars.top) if (!isEmpty(vars.top)),
+	("select" : vars.select) if (!isEmpty(vars.select)),
+	("filter" : vars.filter) if (!isEmpty(vars.filter)),
+	("doSearch" : vars.doSearch) if (!isEmpty(vars.doSearch))
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData output (JSON)" doc:id="b94c79b3-3cf0-4bd4-bd8d-1297613f1a4b">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"entries": payload map {
+		($ mapObject (value, key) -> { 
+			(key): value
+		})
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Success message" doc:id="c60a2893-00ce-40f5-aa4e-c1ab103f367f" message="#['Successfully processed!']" />
+    </flow>
+    <flow name="get:\substance-liquid-availabilities:servier-sfdc-xp-api-config" doc:id="5514a8e4-f734-4d6a-ad7f-fc9b15d91988">
+        <ee:transform doc:name="Set variables TOP, SELECT and FILTER and CODPDT IN" doc:id="0d76cb8a-4462-4b9d-a295-d33e0e7b186f">
+            <ee:variables>
+                <ee:set-variable variableName="top"><![CDATA[attributes.queryParams.top]]></ee:set-variable>
+                <ee:set-variable variableName="select"><![CDATA[((attributes.queryParams.select as String default '' splitBy ',') - 'Substance') joinBy ',']]></ee:set-variable>
+                <ee:set-variable variableName="filter"><![CDATA[attributes.queryParams.filter as String default '' replace (('(\\bSubstance\\b)') as Regex) with 'CODPDT']]></ee:set-variable>
+                <ee:set-variable variableName="doSearch"><![CDATA[attributes.queryParams.doSearch]]></ee:set-variable>
+                <ee:set-variable variableName="codpdtIn"><![CDATA[attributes.queryParams.codpdtIn]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <http:request method="GET" doc:name="GET Substance Liquid Availabilities from Mosaic" doc:id="0306df26-e6cd-45b8-ba49-81ad3fab5901" config-ref="dbs-process-api-httpsReqconfig" path="/mosaic/liquid-substance-availabilities" responseTimeout="120000">
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	//("top" : vars.top) if (!isEmpty(vars.top)),// Disabled to improve SQL performance on Mosaic. Database responds ten times faster without rownum clause. Seen with Nicolas Greard and Benjamin.
+	("select" : vars.select) if (!isEmpty(vars.select)),
+	("filter" : vars.filter) if (!isEmpty(vars.filter)),
+	("doSearch" : vars.doSearch) if (!isEmpty(vars.doSearch)),
+	("codpdtIn" : vars.codpdtIn) if (!isEmpty(vars.codpdtIn))
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData output (JSON)" doc:id="b60df6c4-615b-4a7a-805d-5005c862a808">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"entries": if (vars.select contains 'Substance') (payload map ($ ++ {
+		Substance: $.CODPDT as String default "unknown"
+	})) else payload
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="b95a41a6-8fc4-434d-994d-d8dcc474088a" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+    <flow name="get:\substance-dry-availabilities:servier-sfdc-xp-api-config" doc:id="073bbd6f-9a56-41fb-9c18-4be6ebba757f">
+        <ee:transform doc:name="Set variables TOP, SELECT and FILTER and CODPDT IN" doc:id="ba212988-a462-4669-8e72-42e1909bf099">
+            <ee:variables>
+                <ee:set-variable variableName="top"><![CDATA[attributes.queryParams.top]]></ee:set-variable>
+                <ee:set-variable variableName="select"><![CDATA[((attributes.queryParams.select as String default '' splitBy ',') - 'Substance') joinBy ',']]></ee:set-variable>
+                <ee:set-variable variableName="filter"><![CDATA[attributes.queryParams.filter as String default '' replace (('(\\bSubstance\\b)') as Regex) with 'CODPDT']]></ee:set-variable>
+                <ee:set-variable variableName="doSearch"><![CDATA[attributes.queryParams.doSearch]]></ee:set-variable>
+                <ee:set-variable variableName="codpdtIn"><![CDATA[attributes.queryParams.codpdtIn]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <http:request method="GET" doc:name="GET Substance Dry Availabilities from Mosaic" doc:id="4f7f98f7-4b65-4db1-96b3-c60b6f5b2bb2" config-ref="dbs-process-api-httpsReqconfig" path="/mosaic/dry-substance-availabilities" responseTimeout="120000">
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	//("top" : vars.top) if (!isEmpty(vars.top)),// Disabled to be consistent with liquid substances. See comment in liquid substances for more detail. Seen with Nicolas Greard and Benjamin.
+	("select" : vars.select) if (!isEmpty(vars.select)),
+	("filter" : vars.filter) if (!isEmpty(vars.filter)),
+	("doSearch" : vars.doSearch) if (!isEmpty(vars.doSearch)),
+	("codpdtIn" : vars.codpdtIn) if (!isEmpty(vars.codpdtIn))
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData output (JSON)" doc:id="c14d03b6-8de7-43ff-8ee6-2b95feac73e5">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"entries": if (vars.select contains 'Substance') (payload map ($ ++ {
+		Substance: $.CODPDT as String default "unknown"
+	})) else payload
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="1d2c9bc9-2e82-4cb1-ac21-715a13cac97c" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+    <flow name="put:\substances:application\json:servier-sfdc-xp-api-config" doc:id="6ab174ce-a749-4464-b4cb-3a9f95004372">
+        <set-variable value="Substance__c" doc:name="sObjectsType" doc:id="fba6b5ae-84a9-4f2a-b160-6790df1d9ee6" variableName="sObjectsType" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="a0bfc632-e1f2-488a-a4f5-3bf16323abab" name="upsert-sobjects" />
+    </flow>
+    <flow name="put:\substances:application\csv:servier-sfdc-xp-api-config" doc:id="d3b2f4e2-2b30-4d6f-a145-8ac4ae2002f9">
+        <set-variable value="Substance__c" doc:name="sObjectsType" doc:id="f0c01af9-dcb0-4deb-9438-bb1094ffa255" variableName="sObjectsType" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="c5edde55-a69b-4108-96b2-f60594d9a844" name="upsert-sobjects" />
+    </flow>
+    <flow name="put:\substances-SerialMode:application\json:servier-sfdc-xp-api-config" doc:id="c8a4b9e1-e108-4081-be3a-0035ddb0138e">
+        <set-variable value="Substance__c" doc:name="sObjectsType" doc:id="87e2c616-2398-4a59-9b72-ba354f11c297" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="09b34713-16f2-4cce-b4ba-53aefdb73a9c" variableName="concurrencyMode" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="31d7151a-e962-42a0-9707-09389b097aab" name="upsert-sobjects" />
+    </flow>
+    <flow name="put:\substances-SerialMode:application\csv:servier-sfdc-xp-api-config" doc:id="0562bf2a-28d7-41af-b7a9-f06a532f916f">
+        <set-variable value="Substance__c" doc:name="sObjectsType" doc:id="d1c94754-bac9-4b07-9033-4e90d39ac9f7" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="809dbf4e-4ad0-4dd2-8d68-b3d85b7fc650" variableName="concurrencyMode" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="a4a2cf45-58d6-4e98-9e74-f5ae938bf8ba" name="upsert-sobjects" />
+    </flow>
+    <flow name="delete:\substances:application\csv:servier-sfdc-xp-api-config" doc:id="f348e6fa-a29b-4f17-b88a-e5158ba81562">
+        <set-variable value="Substance__c" doc:name="sObjectsType" doc:id="5362d963-29d0-4162-8d16-b0c21b610e4c" variableName="sObjectsType" />
+        <flow-ref doc:name="delete-sobjects" doc:id="34cecb11-3855-49c4-ab81-85225c59ba28" name="delete-sobjects" />
+    </flow>
+    <flow name="delete:\substances-SerialMode:application\csv:servier-sfdc-xp-api-config" doc:id="e76a0544-7f4b-45ed-99eb-35d08926b4f5">
+        <set-variable value="Substance__c" doc:name="sObjectsType" doc:id="26f36926-f141-46ae-beb0-056ba2d9d807" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="77426bf7-4024-465d-b8bf-47c7bd988349" variableName="concurrencyMode" />
+        <flow-ref doc:name="delete-sobjects" doc:id="a40a3468-9f7c-4e5b-8de1-324c9e39189c" name="delete-sobjects" />
+    </flow>
+    <flow name="put:\substance-restricted-accesses:application\json:servier-sfdc-xp-api-config">
+        <set-variable value="SubstanceRestrictedAccess__c" doc:name="sObjectsType" doc:id="4a67b2a2-ead9-4f73-b431-0b307d014ebf" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="f8e33335-4743-42a1-9e0f-61d21e475dcb" variableName="concurrencyMode" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="b9a30b2a-9304-4cc6-9207-33d78b734917" name="upsert-sobjects" />
+    </flow>
+    <flow name="put:\substance-restricted-accesses:application\csv:servier-sfdc-xp-api-config" doc:id="23d2ac83-3512-4372-af7f-aa57c34b129f">
+        <set-variable value="SubstanceRestrictedAccess__c" doc:name="sObjectsType" doc:id="89b8599a-a7f3-49b7-9632-3607a2d4ea9d" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="c4c6d531-6dd2-457d-80ad-8ecb8d8d9187" variableName="concurrencyMode" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="e23a1832-2f43-4085-8aef-8e1e1367631c" name="upsert-sobjects" />
+    </flow>
+    <flow name="delete:\substance-restricted-accesses:application\csv:servier-sfdc-xp-api-config" doc:id="c3e52601-1ed3-49d3-8898-84e7822c72fc">
+        <set-variable value="SubstanceRestrictedAccess__c" doc:name="sObjectsType" doc:id="f7985aad-1b54-432a-8802-4166173dbd4e" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="3858c647-74ed-42e3-9583-a52b320f29c6" variableName="concurrencyMode" />
+        <flow-ref doc:name="delete-sobjects" doc:id="94dc58a6-c436-4ea6-ba9e-e72884fd5504" name="delete-sobjects" />
+    </flow>
+    <flow name="put:\projects:application\json:servier-sfdc-xp-api-config" doc:id="c15e057f-ca66-45d4-acf2-5d538f60dd02">
+        <set-variable value="Name" doc:name="externalIdFieldName" doc:id="c2f6a25e-496a-45c2-ae83-80bac0c1a7f1" variableName="externalIdFieldName" />
+        <set-variable value="Project__c" doc:name="sObjectsType" doc:id="541aa0e4-5b01-42f9-bcc1-15a0ae49442e" variableName="sObjectsType" />
+        <choice doc:name="Choice" doc:id="d58ace8c-fc72-456e-83b4-86d92cced15b">
+            <when expression="#[attributes.headers.'X-HTTP-Method-Override' == 'PATCH']">
+                <flow-ref doc:name="update-sobjects" doc:id="8a74d89e-ac09-41d8-96e2-7a2e1266f425" name="update-sobjects" />
+            </when>
+            <otherwise>
+                <flow-ref doc:name="upsert-sobjects" doc:id="fa75bc11-64fb-4963-9de2-af06d601d6ec" name="upsert-sobjects" />
+            </otherwise>
+        </choice>
+    </flow>
+    <flow name="delete:\projects:application\csv:servier-sfdc-xp-api-config" doc:id="693b369a-ee00-4c96-b928-fe84f150d8f0">
+        <set-variable value="Project__c" doc:name="sObjectsType" doc:id="ceab3396-d9fe-4620-a8a3-62e462b6423e" variableName="sObjectsType" />
+        <flow-ref doc:name="delete-sobjects" doc:id="ed44f3a7-d7a6-433b-9ff6-5a388bee1bde" name="delete-sobjects" />
+    </flow>
+    <flow name="get:\projects:servier-sfdc-xp-api-config" doc:id="855e97e4-b049-495d-9689-901ad620f786">
+        <flow-ref doc:name="get-Projects" doc:id="ffb2240d-22fc-4eeb-a2d6-3d53769be8ed" name="select-Projects-by-projectType" />
+    </flow>
+    <flow name="get:\projects-plan:servier-sfdc-xp-api-config" doc:id="57874a0c-4b72-4c39-8f13-de5083624ab7">
+        <flow-ref doc:name="get-Projects" doc:id="05b8d780-ecd7-44bb-94cf-3a7d621d3f43" name="select-Projects-by-projectType" />
+    </flow>
+    <flow name="put:\project-restricted-data:application\json:servier-sfdc-xp-api-config">
+        <set-variable value="Name" doc:name="externalIdFieldName" doc:id="bc3d8f33-4609-474d-903a-ebf50cab6e67" variableName="externalIdFieldName" />
+        <set-variable value="ProjectRestrictedData__c" doc:name="sObjectsType" doc:id="671979c9-9c46-4e7c-b547-27ad1d02694c" variableName="sObjectsType" />
+		<choice doc:name="Choice" doc:id="e3fac36c-9eef-4068-9104-1906a2b5a59d">
+            <when expression="#[attributes.headers.'X-HTTP-Method-Override' == 'PATCH']">
+                <ee:transform doc:name="datesToClear" doc:id="d60a0163-1a06-4956-b762-7d947e8679eb">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map (prj) -> (prj - 'fieldsToNull')]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="datesToClear"><![CDATA[%dw 2.0
+output application/json
+---
+payload filter ($.X1stLaunchOrGoPCC__c == null)]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+				<flow-ref doc:name="update-sobjects" doc:id="2027f508-d78a-4d79-94db-07589a10fed4" name="update-sobjects" />
+				<salesforce:update doc:name="Update" doc:id="706e854c-dac5-4954-88c9-f6f27c3adb29" config-ref="salesforceConfig" type="#[vars.sObjectsType]">
+					<salesforce:records><![CDATA[#[vars.datesToClear]]]></salesforce:records>
+				</salesforce:update>
+				<ee:transform doc:name="Java to JSON" doc:id="56f09f2e-1968-4aec-9392-edfd5fdfeb6e" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[202]" doc:name="httpStatus" doc:id="37518eac-40eb-4221-a3a2-961d0cc7f93d" variableName="httpStatus" />
+            </when>
+            <otherwise>
+                <flow-ref doc:name="upsert-sobjects" doc:id="629f9120-af75-4443-a9f4-2d42d6030895" name="upsert-sobjects" />
+            </otherwise>
+        </choice>
+    </flow>
+    <flow name="put:\projects-plan:application\json:servier-sfdc-xp-api-config">
+        <set-variable value="Name" doc:name="externalIdFieldName" doc:id="8845b8cb-82a8-4353-9406-e41563a845d3" variableName="externalIdFieldName" />
+        <set-variable value="ProjectPlan__c" doc:name="sObjectsType" doc:id="bd4746ac-cb89-4dbb-b789-afce96abe04e" variableName="sObjectsType" />
+		<choice doc:name="Choice" doc:id="0917094b-d5a4-4b0e-b239-ed718193ed98">
+            <when expression="#[attributes.headers.'X-HTTP-Method-Override' == 'PATCH']">
+                <ee:transform doc:name="datesToClear" doc:id="903dbbd8-d7f5-497e-891b-4ff23b7a95da">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map (prj) -> (prj - 'fieldsToNull')]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="datesToClear"><![CDATA[%dw 2.0
+output application/json
+---
+payload filter ($.X1stLaunchOrGoPCC__c == null)]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+				<flow-ref doc:name="update-sobjects" doc:id="adea8054-576f-4ebc-93cf-b7b22d8827bd" name="update-sobjects" />
+				<salesforce:update doc:name="Update" doc:id="3bbac6d2-2f61-4208-a001-95598d40d2f2" config-ref="salesforceConfig" type="#[vars.sObjectsType]">
+					<salesforce:records><![CDATA[#[vars.datesToClear]]]></salesforce:records>
+				</salesforce:update>
+				<ee:transform doc:name="Java to JSON" doc:id="ed18234d-0bbb-41a6-ab0f-1a9a442d9a37" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[202]" doc:name="httpStatus" doc:id="de0565f5-7ae3-4c7b-8c15-8553d2ccedf5" variableName="httpStatus" />
+            </when>
+            <otherwise>
+                <flow-ref doc:name="upsert-sobjects" doc:id="788fb423-eb79-4c8f-ab89-0e5e52a2f629" name="upsert-sobjects" />
+            </otherwise>
+        </choice>
+    </flow>
+    <flow name="delete:\project-restricted-data:application\csv:servier-sfdc-xp-api-config">
+        <set-variable value="Id" doc:name="externalIdFieldName" doc:id="2a32195c-28dd-4d22-badb-699111ff0fe7" variableName="externalIdFieldName" />
+        <set-variable value="ProjectRestrictedData__c" doc:name="sObjectsType" doc:id="f3813467-56d8-4a9d-ab9d-93505b64b7ec" variableName="sObjectsType" />
+        <flow-ref doc:name="delete-sobjects-BiPilot" doc:id="200a63fb-d2b5-4062-876f-ea883b660105" name="delete-sobjects-in-BiPilot" />
+    </flow>
+    <flow name="put:\project-substances:application\json:servier-sfdc-xp-api-config">
+        <set-variable value="ProjectSubstance__c" doc:name="sObjectsType" doc:id="03f8c0ea-17f6-4a2a-858a-3aec01343e7c" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="8d523eae-07d1-4371-a056-8c8895d74a94" variableName="concurrencyMode" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="d8390dbb-2950-4eef-b983-9a29cde24c26" name="upsert-sobjects" />
+    </flow>
+    <flow name="put:\project-substances:application\csv:servier-sfdc-xp-api-config" doc:id="d5643c0b-6e1c-4dc3-adcc-30aee3252fee">
+        <set-variable value="ProjectSubstance__c" doc:name="sObjectsType" doc:id="c37b6b9a-3b38-4b0c-98b4-bc7570e64025" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="1dc74015-a4fc-4045-89e1-bb163daf7043" variableName="concurrencyMode" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="2e48afc8-933c-41f8-a3f3-32e1522d3dbd" name="upsert-sobjects" />
+    </flow>
+    <flow name="delete:\project-substances:application\csv:servier-sfdc-xp-api-config" doc:id="384b5451-add0-4679-8cc1-88193c1cfe7d">
+        <set-variable value="ProjectSubstance__c" doc:name="sObjectsType" doc:id="1bf884f5-cfe9-4d54-a4cf-4b13e159f307" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="3389fdb6-a197-46eb-9ce9-58d289cf0196" variableName="concurrencyMode" />
+        <flow-ref doc:name="delete-sobjects" doc:id="b6dc8d78-a74a-4ff0-939a-41cdded290ed" name="delete-sobjects" />
+    </flow>
+    <flow name="put:\series:application\json:servier-sfdc-xp-api-config" doc:id="8155e4db-512d-47cf-9d60-53882572ac6f">
+        <set-variable value="Serie__c" doc:name="sObjectsType" doc:id="bde0f676-4e07-4232-952a-f07019aa2868" variableName="sObjectsType" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="ddda4bcb-3d22-4356-b9ca-65440c7bd5b7" name="upsert-sobjects" />
+    </flow>
+    <flow name="put:\series:application\csv:servier-sfdc-xp-api-config" doc:id="8ac3ef16-ef55-48b1-bafa-2d72cb3c2319">
+        <set-variable value="Serie__c" doc:name="sObjectsType" doc:id="34323d06-bdb4-43fb-9723-d79871b92121" variableName="sObjectsType" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="eaf6b981-db68-4530-bf26-985a6aaa2802" name="upsert-sobjects" />
+    </flow>
+    <flow name="put:\series-SerialMode:application\json:servier-sfdc-xp-api-config" doc:id="3dc7abb7-dbd8-4c29-9355-49d629e182a7">
+        <set-variable value="Serie__c" doc:name="sObjectsType" doc:id="087622e8-540f-4358-b2b0-a6b2af64208c" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="51e861e9-334d-4d70-bb4b-447e0424b2ec" variableName="concurrencyMode" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="59706a7b-ed49-4c9c-92e3-75face5edb00" name="upsert-sobjects" />
+    </flow>
+    <flow name="put:\series-SerialMode:application\csv:servier-sfdc-xp-api-config" doc:id="3ed09c83-4af7-4f37-ba0e-5aede279cb37">
+        <set-variable value="Serie__c" doc:name="sObjectsType" doc:id="88c43b6f-ff33-4e9e-b5b6-2cc5725a36c1" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="8991d44a-2910-4149-9885-e0719b0f7cc4" variableName="concurrencyMode" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="a0baf870-3e0e-48cd-8146-a8cb81b4ce07" name="upsert-sobjects" />
+    </flow>
+    <flow name="put:\users:application\json:servier-sfdc-xp-api-config" doc:id="c7a5842f-f799-4073-8c3f-50e3316c4bb0">
+		<set-variable value="Id" doc:name="externalIdFieldName" doc:id="55d5e698-7a22-4083-aaf0-aa342e066f67" variableName="externalIdFieldName"/>
+		<flow-ref doc:name="upsert-users" doc:id="220a5c91-ac15-411b-be9f-803cbbfa13e1" name="upsert-users" />
+    </flow>
+    <flow name="delete:\series:application\csv:servier-sfdc-xp-api-config" doc:id="cd069b73-e0c8-491f-b436-2be1484300ac">
+        <set-variable value="Serie__c" doc:name="sObjectsType" doc:id="c872e24e-8420-4244-8daa-ac487052f97d" variableName="sObjectsType" />
+        <flow-ref doc:name="delete-sobjects" doc:id="dd166093-53cf-426c-bea5-aa76c5e29508" name="delete-sobjects" />
+    </flow>
+    <flow name="delete:\series-SerialMode:application\csv:servier-sfdc-xp-api-config" doc:id="ddd55c0c-8081-40c6-8d35-262a09f2bb09">
+        <set-variable value="Serie__c" doc:name="sObjectsType" doc:id="0b5fef22-2467-41a7-9db4-f70b07605403" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="fc6a928f-31d9-4ae3-b886-0cd420d0a3a6" variableName="concurrencyMode" />
+        <flow-ref doc:name="delete-sobjects" doc:id="a38a780e-6b66-4633-9e9c-3b6b1101f17c" name="delete-sobjects" />
+    </flow>
+    <flow name="put:\substance-series:application\json:servier-sfdc-xp-api-config" doc:id="34f5af34-61a1-45b5-9e17-7531fd9e58dd">
+        <set-variable value="SubstanceSerie__c" doc:name="sObjectsType" doc:id="9d91759a-a4f0-4ec1-ae70-71ccd6885b12" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="20f37270-0b40-4c75-9a7e-c08117eba98f" variableName="concurrencyMode" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="a5279dfe-8f05-4083-871b-95e82dfa64f8" name="upsert-sobjects" />
+    </flow>
+    <flow name="put:\substance-series:application\csv:servier-sfdc-xp-api-config" doc:id="089eaa6a-e0da-4e63-8c28-b7e03d4cce8d">
+        <set-variable value="SubstanceSerie__c" doc:name="sObjectsType" doc:id="a2248488-5000-4f7e-a680-93b45ece29c1" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="d5f2f232-077d-4bf0-903d-a4a42da6acee" variableName="concurrencyMode" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="1d57bd99-2e82-4e3a-907f-adb41adcef12" name="upsert-sobjects" />
+    </flow>
+    <flow name="delete:\substance-series:application\csv:servier-sfdc-xp-api-config" doc:id="e69f4205-f932-4eed-8d03-0676ed5130e9">
+        <set-variable value="SubstanceSerie__c" doc:name="sObjectsType" doc:id="a079ae9d-ad4a-4f70-8e23-0b5de1776612" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="592d3851-06e7-4ff6-9bc8-48d220a79373" variableName="concurrencyMode" />
+        <flow-ref doc:name="delete-sobjects" doc:id="d9db95d0-715b-4e2c-8f9d-c357341866be" name="delete-sobjects" />
+    </flow>
+    <flow name="put:\parent-substance-categories:application\json:servier-sfdc-xp-api-config">
+        <set-variable value="ParentSubstanceCat__c" doc:name="sObjectsType" doc:id="36c81681-462b-4d49-b103-a4bb2b447c8f" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="b0101066-d16d-47c2-a818-89970f7d57d5" variableName="concurrencyMode" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="f1fb4cf7-0af6-4e0c-b8d7-2ce1e21f2016" name="upsert-sobjects" />
+    </flow>
+    <flow name="put:\parent-substance-categories:application\csv:servier-sfdc-xp-api-config" doc:id="180c90e6-16d3-4732-987f-d6d1117a87db">
+        <set-variable value="ParentSubstanceCat__c" doc:name="sObjectsType" doc:id="fb037aba-0bc3-47d5-9b04-0766f9e007bc" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="7171ac1e-8b12-43d4-a317-0e59bdeb814e" variableName="concurrencyMode" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="9d52c7ae-ddf0-4c39-8f21-2f733a876cba" name="upsert-sobjects" />
+    </flow>
+    <flow name="delete:\parent-substance-categories:application\csv:servier-sfdc-xp-api-config" doc:id="1d5b557e-00d7-40c6-b588-0b879e24e09d">
+        <set-variable value="ParentSubstanceCat__c" doc:name="sObjectsType" doc:id="6bd3d2ef-6bb1-4e90-b71d-615a8f459f16" variableName="sObjectsType" />
+        <set-variable value="Serial" doc:name="concurrencyMode" doc:id="ab865d0b-7ab8-4342-93f7-8740b09e3bdf" variableName="concurrencyMode" />
+        <flow-ref doc:name="delete-sobjects" doc:id="bfa1dc53-3938-41b0-aed3-92d6d5c0961f" name="delete-sobjects" />
+    </flow>
+    <flow name="put:\phases:application\json:servier-sfdc-xp-api-config">
+        <set-variable value="Phase__c" doc:name="sObjectsType" doc:id="24e28e30-8775-473d-8374-a6cd89a16efe" variableName="sObjectsType" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="4e5c458b-59ae-4d31-acc2-73ba938416c1" name="upsert-sobjects" />
+    </flow>
+    <flow name="delete:\phases:application\csv:servier-sfdc-xp-api-config">
+        <set-variable value="Id" doc:name="externalIdFieldName" doc:id="c1701ff3-676f-4300-9070-8834bec313c4" variableName="externalIdFieldName" />
+        <set-variable value="Phase__c" doc:name="sObjectsType" doc:id="9f8c6162-8279-4bad-94f0-c7e6e64c5111" variableName="sObjectsType" />
+        <flow-ref doc:name="delete-sobjects Bi Pilot" doc:id="6b33093f-fa52-40e0-8534-a2e3d458c995" name="delete-sobjects-in-BiPilot" />
+    </flow>
+    <flow name="put:\phases-projection:application\json:servier-sfdc-xp-api-config">
+        <set-variable value="PhaseProjection__c" doc:name="sObjectsType" doc:id="9f46df40-61cd-42e1-ae70-d293a4b8ce22" variableName="sObjectsType" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="6ec08a5b-e783-4da6-87fb-5152c9d58079" name="upsert-sobjects" />
+    </flow>
+	<flow name="delete:\phases-projection:application\csv:servier-sfdc-xp-api-config">
+        <set-variable value="Id" doc:name="externalIdFieldName" doc:id="dcc75a03-3128-4a1c-b40f-4d5c0281a799" variableName="externalIdFieldName" />
+        <set-variable value="PhaseProjection__c" doc:name="sObjectsType" doc:id="ac375d4f-f983-4ccc-af57-617cf5b6191c" variableName="sObjectsType" />
+        <flow-ref doc:name="delete-sobjects Bi Pilot" doc:id="b32f8340-9e65-41ad-9d00-262765bdd294" name="delete-sobjects-in-BiPilot" />
+    </flow>
+    <flow name="delete:\costrd-projection:application\csv:servier-sfdc-xp-api-config">
+        <set-variable value="Id" doc:name="externalIdFieldName" doc:id="fcf8282e-3709-48b9-8293-1bc7ffbeede5" variableName="externalIdFieldName" />
+		<set-variable value="CostRDProjection__c" doc:name="sObjectsType" doc:id="c9ef8102-dec4-4d26-99fd-61baad5eda51" variableName="sObjectsType" />
+		<flow-ref doc:name="delete-sobjects Bi Pilot" doc:id="06babbf6-faac-41d0-9f94-a2926300c1d5" name="delete-sobjects-in-BiPilot" />
+    </flow>
+	<flow name="post:\costrd-projection:application\json:servier-sfdc-xp-api-config">
+        <set-variable value="Id" doc:name="externalIdFieldName" doc:id="8dac3629-ead6-41ce-87ed-d39d13d21375" variableName="externalIdFieldName" />
+		<set-variable value="CostRDProjection__c" doc:name="sObjectsType" doc:id="47fca12f-9a22-4038-91e9-f6c1e0f1e1cc" variableName="sObjectsType" />
+		<flow-ref doc:name="upsert-sobjects" doc:id="e31e3bcb-babf-4ab4-ad51-462f931f69e0" name="upsert-sobjects" />
+    </flow>
+	<flow name="put:\patents:application\json:servier-sfdc-xp-api-config">
+        <set-variable value="Patent__c" doc:name="sObjectsType" doc:id="f842ff02-3507-4d59-ae10-5bfe01fd8049" variableName="sObjectsType" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="a09291a4-9140-46a1-98ad-e1af69c8be63" name="upsert-sobjects" />
+    </flow>
+    <flow name="delete:\patents:application\csv:servier-sfdc-xp-api-config">
+        <set-variable value="Id" doc:name="externalIdFieldName" doc:id="827ba350-738e-4907-89bf-0ed6adcc9ea7" variableName="externalIdFieldName" />
+        <set-variable value="Patent__c" doc:name="sObjectsType" doc:id="ac126797-1b61-46f5-8219-4717f19e0258" variableName="sObjectsType" />
+        <flow-ref doc:name="delete-sobjects-BiPilot" doc:id="995ae63a-fc1f-4a8e-a6f6-125d52fd1ff9" name="delete-sobjects-in-BiPilot" />
+    </flow>
+    <flow name="put:\biospace-news:application\json:servier-sfdc-xp-api-config">
+        <set-variable value="RSSFeed__c" doc:name="sObjectsType" doc:id="763121d2-0580-4d4a-ad95-647b83ae20e5" variableName="sObjectsType" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="626b5193-bc0c-4014-a5a7-c66c2517d60e" name="upsert-sobjects" />
+    </flow>
+    <flow name="put:\programs:application\json:servier-sfdc-xp-api-config">
+        <set-variable value="Name" doc:name="externalIdFieldName" doc:id="219d6bcb-ddda-4d9a-a303-3b82d3a6a5f0" variableName="externalIdFieldName" />
+        <set-variable value="Program__c" doc:name="sObjectsType" doc:id="2dd6daba-d97a-4bde-b926-ee3610b799fb" variableName="sObjectsType" />
+        <flow-ref doc:name="upsert-sobjects" doc:id="09022f55-c226-4300-af91-6589859a1526" name="upsert-sobjects" />
+    </flow>
+    <flow name="get:\scrip-news:servier-sfdc-xp-api-config" doc:id="403193a6-0bea-46dc-bae2-ae26b5eaa0d2">
+        <ee:transform doc:name="Set variables TOP, SELECT and FILTER" doc:id="75deb1c0-4e84-4e0b-ae6a-4dea21974729">
+            <ee:variables>
+                <ee:set-variable variableName="orderby"><![CDATA[attributes.queryParams.orderby]]></ee:set-variable>
+                <ee:set-variable variableName="skip"><![CDATA[attributes.queryParams.skip default 0]]></ee:set-variable>
+                <ee:set-variable variableName="top"><![CDATA[attributes.queryParams.top default 20]]></ee:set-variable>
+                <ee:set-variable variableName="select"><![CDATA[attributes.queryParams.select]]></ee:set-variable>
+                <ee:set-variable variableName="doSearch"><![CDATA[attributes.queryParams.doSearch]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <validation:is-true doc:name="Validate skip against top" doc:id="f9d7ffd6-c4b0-4958-af9c-39db9362b121" expression="#[mod(vars.skip, vars.top) == 0]" message="Skip should be a multiple of top." />
+        <http:request method="GET" doc:name="GET news from Scrip" doc:id="f3fd5c3a-32d7-41f5-9451-75a6b6bac983" config-ref="scrip-api-httpsReqconfig" path="/news" responseTimeout="120000">
+            <http:query-params><![CDATA[#[output application/java
+---
+{
+	"page" : round(vars.skip as Number / vars.top as Number) + 1,
+	"perPage" : vars.top,
+	"sortBy" : vars.orderby,
+	"q" : vars.doSearch
+} filterObject ((value) -> !isBlank(value))]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData output (JSON)" doc:id="4595bbfa-0b20-4e45-a103-c63a3caeebd0">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"entries": if (isBlank(vars.select)) payload else payload map ((entry) -> (entry filterObject ((value, key) -> (vars.select default [] contains key))))
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="e4ad3b8e-98ec-436e-ab91-6233f7cffc7a" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+	<flow name="get:\trials:servier-sfdc-xp-api-config" doc:id="01e2bf60-0cdb-4b27-a7d0-00cd214e66b2">
+        <http:request method="GET" doc:name="GET trial from Trialtrove" doc:id="a2a90b7b-a76b-42cd-a166-672b24ec407b" config-ref="servier-trialtrove-sys-api-httpsRequest" path="/trials" responseTimeout="120000">
+            <http:query-params><![CDATA[#[output application/java
+var top = attributes.queryParams.top
+var select = attributes.queryParams.select
+var doSearch = attributes.queryParams.doSearch
+---
+{
+	("top" : top) if (!isEmpty(top)),
+	("select" : select) if (!isEmpty(select)),
+	("doSearch" : doSearch) if (!isEmpty(doSearch))
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData output" doc:id="4595bbfa-0b20-4e45-a103-c63a3caeebd0">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"entries": payload
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="e4ad3b8e-98ec-436e-ab91-6233f7cffc7a" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+	<flow name="get:\drugs:servier-sfdc-xp-api-config">
+        <http:request method="GET" doc:name="GET drugs from Pharma Projects System API" doc:id="c13ccd41-df3c-4413-9aec-6bb929fa693d" config-ref="pharma-projects-sys-api-httpsReqconfig" path="/drugs">
+            <http:query-params><![CDATA[#[output application/java
+var top = attributes.queryParams.top
+var select = attributes.queryParams.select
+var doSearch = attributes.queryParams.doSearch
+---
+{
+	("top" : top) if (!isEmpty(top)),
+	("select" : select) if (!isEmpty(select)),
+	("doSearch" : doSearch) if (!isEmpty(doSearch))
+}]]]></http:query-params>
+        </http:request>
+        <ee:transform doc:name="Set OData output" doc:id="428c407c-6645-4694-abd3-b386e1b60ad9">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	entries: payload
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" doc:name="Success message" doc:id="6d1c4785-b1de-49c6-bcf2-3cddc66c5b5a" message="#['Successfully processed ! Number of records : ' ++ sizeOf(payload.entries)]" />
+    </flow>
+	<flow name="get:\sObjects\(sTable)\(sFilterField):servier-sfdc-xp-api-config">
+        <flow-ref doc:name="select-sObject-by-fieldname" doc:id="ed0d47db-189a-48b1-88e9-917f7ecac25d" name="select-sObject-by-fieldname" />
+    </flow>
+	<flow name="get:\sObjects\(sTable):servier-sfdc-xp-api-config">
+        <flow-ref doc:name="select-sObject" doc:id="5831de4e-c0f4-4e13-a391-0a7d673ce5af" name="select-sObject" />
+    </flow>
+</mule>

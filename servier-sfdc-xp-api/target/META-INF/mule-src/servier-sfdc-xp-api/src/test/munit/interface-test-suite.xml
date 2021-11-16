@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="interface-test-suite.xml" />
+	<global-property doc:name="Global Property" doc:id="6d397ebe-c913-45de-955a-e80723cadba5" name="mule.env" value="munit" />
+	<munit:test name="interface-test-suite-get:\substance-liquid-availabilities:servier-sfdc-xp-api-configTest" doc:id="5a2c7091-0d2f-469b-aa88-23ae04382a5a" description="Test" ignore="true">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="GET Substance Liquid Availabilities from Mosaic" doc:id="111253e8-0a6c-4686-912f-a1d89cf96bcb" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="GET Substance Liquid Availabilities from Mosaic" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="0306df26-e6cd-45b8-ba49-81ad3fab5901" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#['[
+    {
+        &quot;CONCUNITTYPE&quot;: &quot;mM&quot;,
+        &quot;SOLVENTID&quot;: &quot;DMSOH&quot;,
+        &quot;CODLOT&quot;: 726535,
+        &quot;CODPDT&quot;: 453642,
+        &quot;LARGESTALIQUOTESTIMATE&quot;: -20,
+        &quot;FORM&quot;: &quot;Liquid&quot;,
+        &quot;CONCENTRATION&quot;: 10,
+        &quot;TOTALAVAILABLEAMOUNT&quot;: 0,
+        &quot;AMOUNTUNIT&quot;: &quot;µL&quot;,
+        &quot;ALIQUOTUNIT&quot;: &quot;µL&quot;,
+        &quot;SOLVENTCONC&quot;: &quot;100%&quot;
+    },
+    {
+        &quot;CONCUNITTYPE&quot;: &quot;mM&quot;,
+        &quot;SOLVENTID&quot;: &quot;DMSOH&quot;,
+        &quot;CODLOT&quot;: 730910,
+        &quot;CODPDT&quot;: 456281,
+        &quot;LARGESTALIQUOTESTIMATE&quot;: -20,
+        &quot;FORM&quot;: &quot;Liquid&quot;,
+        &quot;CONCENTRATION&quot;: 10,
+        &quot;TOTALAVAILABLEAMOUNT&quot;: 0,
+        &quot;AMOUNTUNIT&quot;: &quot;µL&quot;,
+        &quot;ALIQUOTUNIT&quot;: &quot;µL&quot;,
+        &quot;SOLVENTCONC&quot;: &quot;100%&quot;
+    },
+    {
+        &quot;CONCUNITTYPE&quot;: &quot;mM&quot;,
+        &quot;SOLVENTID&quot;: &quot;DMSOH&quot;,
+        &quot;CODLOT&quot;: 721974,
+        &quot;CODPDT&quot;: 451209,
+        &quot;LARGESTALIQUOTESTIMATE&quot;: -20,
+        &quot;FORM&quot;: &quot;Liquid&quot;,
+        &quot;CONCENTRATION&quot;: 10,
+        &quot;TOTALAVAILABLEAMOUNT&quot;: 0,
+        &quot;AMOUNTUNIT&quot;: &quot;µL&quot;,
+        &quot;ALIQUOTUNIT&quot;: &quot;µL&quot;,
+        &quot;SOLVENTCONC&quot;: &quot;100%&quot;
+    }
+]']" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<logger level="INFO" doc:name="TODO fix test" doc:id="a4255a0f-4d78-4913-bcdb-50d6d71ecf1e" />
+			<munit:set-event doc:name="Set Event" doc:id="976058b5-60c5-4fa1-8ab7-3781872b440c" >
+				<munit:attributes value="#[{
+	queryParams: {
+		select: 'CODPDT,CODLOT,Substance',
+		filter: 'Substance+eq+\'123\'+and+CODLOT+eq+\'456\'',
+		top: 3
+	}
+}]" mediaType="application/java" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get:\substance-liquid-availabilities:servier-sfdc-xp-api-config" doc:id="51cf8d30-27de-4fb1-8d01-e9a6680e0810" name="get:\substance-liquid-availabilities:servier-sfdc-xp-api-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Success message" doc:id="0d4712a1-d9e1-4a9e-a3ec-8412a7ae98aa" processor="logger">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Success message" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="b95a41a6-8fc4-434d-994d-d8dcc474088a" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:assert-that doc:name="Response payload is as expected" doc:id="1952ddf5-b691-4ff7-9fd6-c2f8cf2d333b" is="#[MunitTools::equalTo([])]" message="Response payload is not as expected" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+
+</mule>

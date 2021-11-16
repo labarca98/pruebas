@@ -1,0 +1,74 @@
+autodiscovery: "61304"
+clientId: "717e0212435f4dfaa0d2a361dbbb6575"
+clientSecret: "4E75ba7dE8E34d449834443a70F2F90B"
+https:
+  host: "0.0.0.0"
+  port: "8081"
+  keystore:
+    type: "JKS"
+    path: "keystore-sfdc.jks"
+    alias: "servier-sfdc-xp-api"
+    password: "c22QRBUja6Yd632V"
+    keypassword: "BPGM8YbE8wN5Pbdq"
+salesforce:
+  clientId: "3MVG9llQY5kM9T6ft1Y9n7M2Vbford6W1nzBt_G41HqN5JuCSFsIQg3mfj_TLD9p92WVqZNJ0l4.kiahWnH5i"
+  clientSecret: "51941DFBC27632237E8C4B6DD89A712236D985BD78AEC35511B756A622928EA5"
+  username: "mulesoft.integration@servier.com.devint01"
+  password: "9Z@u0S0EOujJ"
+  token: "JjnC9OdjgmEAF1fBVoTQxa7m"
+  tokenendpoint: "DISABLED.https://servier-idrs--devint01.my.salesforce.com/services/oauth2/token"
+services:
+  scrip:
+    host: "DISABLED.localhost"
+    port: "8082"
+    basepath: "/api"
+    protocol: "HTTPS"
+    truststore:
+      type: "JKS"
+      path: "truststore-scrip.jks"
+      password: "jgaP2Afq8cx4FLrp"
+  dbs:
+    #host: "mule-worker-servier-dbs-process-api-dev.de-c1.eu1.cloudhub.io"
+    host: "DISABLED.localhost"
+    port: "8083"
+    basepath: "/api"
+    protocol: "HTTPS"
+    responsetimeout: "7200000" # two hours
+    truststore:
+      type: "JKS"
+      path: "truststore-servier-dbs-process-api.jks"
+      password: "aWP5tWBrxXvfXxAt"
+  pubmed:
+    host: "DISABLED.localhost"
+    port: "8082"
+    basepath: "/api"
+    protocol: "HTTPS"
+  pubchem:
+    host: "DISABLED.localhost"
+    port: "8083"
+    basepath: "/api"
+    protocol: "HTTPS"
+  chembl:
+    host: "DISABLED.localhost"
+    port: "8084"
+    basepath: "/api"
+    protocol: "HTTPS"
+  herokuapi:
+    host: "DISABLED.localhost"
+    port: "8085"
+    basepath: "/api"
+    protocol: "HTTPS"
+  uniprot:
+    host: "DISABLED.localhost"
+    port: "8086"
+    basepath: "/api"
+    protocol: "HTTPS"
+  kegg:
+    host: "DISABLED.localhost"
+    port: "8087"
+    basepath: "/api"
+    protocol: "HTTPS"
+jobs:
+  maxrecordsperbatch: "10000"
+  maxjobinfopollingiterations: "200"
+  milisecondsbetweenjobinfopollingiterations: "10000"

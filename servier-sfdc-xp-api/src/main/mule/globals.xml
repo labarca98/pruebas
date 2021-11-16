@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:pubmed-system-apiraml="http://www.mulesoft.org/schema/mule/pubmed-system-apiraml" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd http://www.mulesoft.org/schema/mule/pubmed-system-apiraml http://www.mulesoft.org/schema/mule/pubmed-system-apiraml/current/mule-pubmed-system-apiraml.xsd http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+    <global-property doc:name="Global Property" doc:id="9e38510d-6115-4c58-9bec-c0f5b32b659a" name="mule.env" value="local" />
+    <global-property doc:name="Global Property" doc:id="7f7ee700-cfb0-449e-a604-8547dbbfe363" name="mule.key" value="mXkUdxjxmgFigiR7" />
+    <secure-properties:config name="securePropertiesConfig" doc:name="Secure Properties Config" doc:id="0b513f66-3e36-46f9-96a1-ced5d41826b9" file="properties/${mule.env}.yaml" key="${mule.key}" />
+    <configuration-properties doc:name="Configuration properties" doc:id="8e10f9bd-9e93-4bf1-84cc-3d9c9bcf0306" file="properties/${mule.env}.yaml" />
+    <apikit:config name="servier-sfdc-xp-api-config" api="servier-sfdc-xp-api.raml" raml="servier-sfdc-xp-api.raml" outboundHeadersMapName="outboundHeadersMapName" httpStatusVarName="httpStatus" />
+    <api-gateway:autodiscovery apiId="${autodiscovery}" doc:name="API Autodiscovery" doc:id="6ea75df8-5e5d-44b7-9b41-cc8f71912008" flowRef="api-main" />
+    <salesforce:sfdc-config name="salesforceConfig" doc:name="Salesforce Config" doc:id="da54bfd7-1a2b-4790-83af-bb2bd3f15f0b">
+        <salesforce:oauth-user-pass-connection consumerKey="${salesforce.clientId}" consumerSecret="${secure::salesforce.clientSecret}" username="${salesforce.username}" password="${secure::salesforce.password}" securityToken="${secure::salesforce.token}" tokenEndpoint="${salesforce.tokenendpoint}" >
+			<reconnection >
+				<reconnect count="3" />
+			</reconnection>
+		</salesforce:oauth-user-pass-connection>
+    </salesforce:sfdc-config>
+    <http:listener-config name="servier-sfdc-xp-api-httpsListconfig" doc:name="HTTP Listener config" doc:id="7f6f95e3-8a1d-4ee7-a815-3e59376b4788">
+        <http:listener-connection protocol="HTTPS" host="${https.host}" port="${https.port}" connectionIdleTimeout="120000">
+            <tls:context>
+                <tls:key-store type="jks" path="${https.keystore.path}" keyPassword="${secure::https.keystore.keypassword}" password="${secure::https.keystore.password}" />
+            </tls:context>
+        </http:listener-connection>
+    </http:listener-config>
+    <http:request-config name="dbs-process-api-httpsReqconfig" doc:name="HTTP Request configuration" doc:id="ae68bdac-696c-4b4a-a42e-6aa496b24139" basePath="${services.dbs.basepath}" sendCorrelationId="ALWAYS" responseTimeout="${services.dbs.responsetimeout}">
+        <http:request-connection protocol="${services.dbs.protocol}" host="${services.dbs.host}" port="${services.dbs.port}">
+            <tls:context>
+                <tls:trust-store path="${services.dbs.truststore.path}" password="${secure::services.dbs.truststore.password}" type="${services.dbs.truststore.type}" />
+                <tls:key-store type="${https.keystore.type}" path="${https.keystore.path}" alias="${https.keystore.alias}" keyPassword="${secure::https.keystore.keypassword}" password="${secure::https.keystore.password}" />
+            </tls:context>
+        </http:request-connection>
+        <http:default-headers>
+            <http:default-header key="client_id" value="${clientId}" />
+            <http:default-header key="client_secret" value="${secure::clientSecret}" />
+        </http:default-headers>
+    </http:request-config>
+    <http:request-config name="Pubmed-httpsReqconfig" doc:name="HTTP Request configuration" doc:id="0b4f08f8-97ab-4baa-8b46-51722ecfb2d1" basePath="${services.pubmed.basepath}" sendCorrelationId="ALWAYS">
+        <http:request-connection protocol="${services.pubmed.protocol}" host="${services.pubmed.host}" port="${services.pubmed.port}">
+            <tls:context>
+                <tls:trust-store path="${services.pubmed.truststore.path}" password="${secure::services.pubmed.truststore.password}" type="${services.pubmed.truststore.type}" />
+                <tls:key-store type="${https.keystore.type}" path="${https.keystore.path}" alias="${https.keystore.alias}" keyPassword="${secure::https.keystore.keypassword}" password="${secure::https.keystore.password}" />
+            </tls:context>
+        </http:request-connection>
+        <http:default-headers>
+            <http:default-header key="client_id" value="${clientId}" />
+            <http:default-header key="client_secret" value="${secure::clientSecret}" />
+        </http:default-headers>
+    </http:request-config>
+    <http:request-config name="Pubchem-httpsReqconfig" doc:name="HTTP Request configuration" doc:id="1f44563f-63b5-41e6-a7ff-aa5e22ba52d1" basePath="${services.pubchem.basepath}" sendCorrelationId="ALWAYS">
+        <http:request-connection protocol="${services.pubchem.protocol}" host="${services.pubchem.host}" port="${services.pubchem.port}">
+            <tls:context>
+                <tls:trust-store path="${services.pubchem.truststore.path}" password="${secure::services.pubchem.truststore.password}" type="${services.pubchem.truststore.type}" />
+                <tls:key-store type="${https.keystore.type}" path="${https.keystore.path}" alias="${https.keystore.alias}" keyPassword="${secure::https.keystore.keypassword}" password="${secure::https.keystore.password}" />
+            </tls:context>
+        </http:request-connection>
+        <http:default-headers>
+            <http:default-header key="client_id" value="${clientId}" />
+            <http:default-header key="client_secret" value="${secure::clientSecret}" />
+        </http:default-headers>
+    </http:request-config>
+    <http:request-config name="Chembl-httpsReqconfig" doc:name="HTTP Request configuration" doc:id="f958b382-4a09-4c31-b4b2-0f83df088f99" basePath="${services.chembl.basepath}" sendCorrelationId="ALWAYS">
+        <http:request-connection host="${services.chembl.host}" port="${services.chembl.port}" protocol="${services.chembl.protocol}">
+            <tls:context>
+                <tls:trust-store path="${services.chembl.truststore.path}" password="${secure::services.chembl.truststore.password}" type="${services.chembl.truststore.type}" />
+                <tls:key-store type="${https.keystore.type}" path="${https.keystore.path}" alias="${https.keystore.alias}" keyPassword="${secure::https.keystore.keypassword}" password="${secure::https.keystore.password}" />
+            </tls:context>
+        </http:request-connection>
+        <http:default-headers>
+            <http:default-header key="client_id" value="${clientId}" />
+            <http:default-header key="client_secret" value="${secure::clientSecret}" />
+        </http:default-headers>
+    </http:request-config>
+    <http:request-config name="Heroku-httpsReqconfig" doc:name="HTTP Request configuration" doc:id="803b82be-c270-4754-867a-de0f87e29280" basePath="${services.herokuapi.basepath}" sendCorrelationId="ALWAYS">
+        <http:request-connection protocol="${services.herokuapi.protocol}" host="${services.herokuapi.host}" port="${services.herokuapi.port}">
+            <tls:context>
+                <tls:trust-store path="${services.herokuapi.truststore.path}" password="${secure::services.herokuapi.truststore.password}" type="${services.herokuapi.truststore.type}" />
+                <tls:key-store type="${https.keystore.type}" path="${https.keystore.path}" alias="${https.keystore.alias}" keyPassword="${secure::https.keystore.keypassword}" password="${secure::https.keystore.password}" />
+            </tls:context>
+        </http:request-connection>
+        <http:default-headers>
+            <http:default-header key="client_id" value="${clientId}" />
+            <http:default-header key="client_secret" value="${secure::clientSecret}" />
+        </http:default-headers>
+    </http:request-config>
+    <http:request-config name="Kegg-httpsReqconfig" doc:name="HTTP Request configuration" doc:id="191e96b2-cdea-441e-9948-347dbbdb9f72" basePath="${services.kegg.basepath}" sendCorrelationId="ALWAYS">
+        <http:request-connection protocol="${services.kegg.protocol}" host="${services.kegg.host}" port="${services.kegg.port}">
+            <tls:context>
+                <tls:trust-store path="${services.kegg.truststore.path}" password="${secure::services.kegg.truststore.password}" type="${services.kegg.truststore.type}" />
+                <tls:key-store type="${https.keystore.type}" path="${https.keystore.path}" alias="${https.keystore.alias}" keyPassword="${secure::https.keystore.keypassword}" password="${secure::https.keystore.password}" />
+            </tls:context>
+        </http:request-connection>
+        <http:default-headers>
+            <http:default-header key="client_id" value="${clientId}" />
+            <http:default-header key="client_secret" value="${secure::clientSecret}" />
+        </http:default-headers>
+    </http:request-config>
+    <http:request-config name="UniProt-httpsReqconfig" doc:name="HTTP Request configuration" doc:id="9f50bda8-620a-48cc-969c-9c573eff722c" basePath="${services.uniprot.basepath}" sendCorrelationId="ALWAYS">
+        <http:request-connection protocol="${services.uniprot.protocol}" host="${services.uniprot.host}" port="${services.uniprot.port}">
+            <tls:context>
+                <tls:trust-store path="${services.uniprot.truststore.path}" password="${secure::services.uniprot.truststore.password}" type="${services.uniprot.truststore.type}" />
+                <tls:key-store type="${https.keystore.type}" path="${https.keystore.path}" alias="${https.keystore.alias}" keyPassword="${secure::https.keystore.keypassword}" password="${secure::https.keystore.password}" />
+            </tls:context>
+        </http:request-connection>
+        <http:default-headers>
+            <http:default-header key="client_id" value="${clientId}" />
+            <http:default-header key="client_secret" value="${secure::clientSecret}" />
+        </http:default-headers>
+    </http:request-config>
+    <http:request-config name="scrip-api-httpsReqconfig" doc:name="HTTP Request configuration" doc:id="13249ff0-bcaf-4f9a-86bd-8c93fa80fe4f" basePath="${services.scrip.basepath}" sendCorrelationId="ALWAYS">
+        <http:request-connection protocol="${services.scrip.protocol}" host="${services.scrip.host}" port="${services.scrip.port}">
+            <tls:context>
+                <tls:trust-store path="${services.scrip.truststore.path}" password="${secure::services.scrip.truststore.password}" type="${services.scrip.truststore.type}" />
+                <tls:key-store type="${https.keystore.type}" path="${https.keystore.path}" alias="${https.keystore.alias}" keyPassword="${secure::https.keystore.keypassword}" password="${secure::https.keystore.password}" />
+            </tls:context>
+        </http:request-connection>
+        <http:default-headers>
+            <http:default-header key="client_id" value="${clientId}" />
+            <http:default-header key="client_secret" value="${secure::clientSecret}" />
+        </http:default-headers>
+    </http:request-config>
+    <http:request-config name="servier-trialtrove-sys-api-httpsRequest" doc:name="HTTP Request configuration" doc:id="56c7b8f1-d588-483d-a6fc-dbec026419ca" basePath="${services.trial.basepath}" sendCorrelationId="ALWAYS">
+        <http:request-connection protocol="${services.trial.protocol}" host="${services.trial.host}" port="${services.trial.port}">
+            <tls:context>
+                <tls:trust-store path="${services.trial.truststore.path}" password="${secure::services.trial.truststore.password}" type="${services.trial.truststore.type}" />
+                <tls:key-store type="${https.keystore.type}" path="${https.keystore.path}" alias="${https.keystore.alias}" password="${secure::https.keystore.password}" keyPassword="${secure::https.keystore.keypassword}" />
+            </tls:context>
+        </http:request-connection>
+        <http:default-headers>
+            <http:default-header key="client_id" value="${clientId}" />
+            <http:default-header key="client_secret" value="${secure::clientSecret}" />
+        </http:default-headers>
+    </http:request-config>
+    <http:request-config name="pharma-projects-sys-api-httpsReqconfig" doc:name="HTTP Request configuration" doc:id="bd987e61-6563-4c68-9c58-c9f18dee4c0f" basePath="${services.scrip.basepath}" sendCorrelationId="ALWAYS">
+        <http:request-connection protocol="${services.pharmaprojects.protocol}" host="${services.pharmaprojects.host}" port="${services.pharmaprojects.port}">
+            <tls:context>
+                <tls:trust-store path="${services.pharmaprojects.truststore.path}" password="${secure::services.pharmaprojects.truststore.password}" type="${services.pharmaprojects.truststore.type}" />
+                <tls:key-store type="${https.keystore.type}" path="${https.keystore.path}" alias="${https.keystore.alias}" keyPassword="${secure::https.keystore.keypassword}" password="${secure::https.keystore.password}" />
+            </tls:context>
+        </http:request-connection>
+        <http:default-headers>
+            <http:default-header key="client_id" value="${clientId}" />
+            <http:default-header key="client_secret" value="${secure::clientSecret}" />
+        </http:default-headers>
+    </http:request-config>
+</mule>

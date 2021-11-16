@@ -1,0 +1,117 @@
+autodiscovery: "000000"
+clientId: "00000000000000000000000000000000"
+clientSecret: "00000000000000000000000000000000"
+https:
+  host: "0.0.0.0"
+  port: "8082"
+  keystore:
+    type: "JKS"
+    path: "keystore-servier-mule-cloudhub.jks"
+    alias: "servier-mule-cloudhub"
+    password: "![+JXaf0G09fQ60zqeWIgCSEoqigF7ogET2TvirI2LMI8=]"
+    keypassword: "![bViSOz/Aa8PN65ymp9OfYwD/pwvEPAOgQZaJoApjHT8=]"
+salesforce:
+  clientId: "3MVG9llQY5kM9T6ft1Y9n7M2Vbford6W1nzBt_G41HqN5JuCSFsIQg3mfj_TLD9p92WVqZNJ0l4.kiahWnH5i"
+  clientSecret: "![U5HB0LL6pAMR3qDlMXGl4a6uS1RH+DONWVvMG4tDkgTczauhfOKBV6RqAQRvLe5zHSOM1H3EQwCuXLub3AsLht+RhWnDSOh3maPMfLp8NkA=]"
+  username: "mulesoft.integration@servier.com.devint01"
+  password: "![YmwDDH655FEVY161ha1nPg==]"
+  token: "![+Mq2YqZt7MfkDLMglRyCd0MnN6CkTsw5lEYKia9MrAw=]"
+  tokenendpoint: "https://servier-idrs--devint01.my.salesforce.com/services/oauth2/token"
+  environment-domain: "@servier.com.prod.devfed01"
+services:
+  trial:
+    host: "localhost"
+    port: "8082"
+    basepath: "/api"
+    protocol: "HTTPS"
+    truststore:
+      type: "JKS"
+      path: "truststore-servier-mule.jks"
+      password: "![Us5tc2ku44aJFdN0k9gqSujvB8/D3SuTwwLjCEKyxqw=]"
+  scrip:
+    host: "localhost"
+    port: "8082"
+    basepath: "/api"
+    protocol: "HTTPS"
+    truststore:
+      type: "JKS"
+      path: "truststore-servier-mule.jks"
+      password: "![Us5tc2ku44aJFdN0k9gqSujvB8/D3SuTwwLjCEKyxqw=]"
+  dbs:
+    #host: "mule-worker-servier-dbs-process-api-dev.de-c1.eu1.cloudhub.io"
+    host: "localhost"
+    port: "8083"
+    basepath: "/api"
+    protocol: "HTTPS"
+    responsetimeout: "7200000" # two hours
+    truststore:
+      type: "JKS"
+      path: "truststore-servier-mule.jks"
+      password: "![Us5tc2ku44aJFdN0k9gqSujvB8/D3SuTwwLjCEKyxqw=]"
+  pubmed:
+    host: "localhost"
+    port: "8092"
+    basepath: "/api"
+    protocol: "HTTPS"
+    truststore:
+      type: "JKS"
+      path: "truststore-servier-mule.jks"
+      password: "![Us5tc2ku44aJFdN0k9gqSujvB8/D3SuTwwLjCEKyxqw=]"
+  pubchem:
+    host: "localhost"
+    port: "8083"
+    basepath: "/api"
+    protocol: "HTTPS"
+    truststore:
+      type: "JKS"
+      path: "truststore-servier-mule.jks"
+      password: "![Us5tc2ku44aJFdN0k9gqSujvB8/D3SuTwwLjCEKyxqw=]"
+  chembl:
+    host: "localhost"
+    port: "8084"
+    basepath: "/api"
+    protocol: "HTTPS"
+    truststore:
+      type: "JKS"
+      path: "truststore-servier-mule.jks"
+      password: "![Us5tc2ku44aJFdN0k9gqSujvB8/D3SuTwwLjCEKyxqw=]"
+  herokuapi:
+    host: "localhost"
+    port: "8085"
+    basepath: "/api"
+    protocol: "HTTPS"
+    truststore:
+      type: "JKS"
+      path: "truststore-servier-mule.jks"
+      password: "![Us5tc2ku44aJFdN0k9gqSujvB8/D3SuTwwLjCEKyxqw=]"
+  uniprot:
+    host: "localhost"
+    port: "8086"
+    basepath: "/api"
+    protocol: "HTTPS"
+    truststore:
+      type: "JKS"
+      path: "truststore-servier-mule.jks"
+      password: "![Us5tc2ku44aJFdN0k9gqSujvB8/D3SuTwwLjCEKyxqw=]"
+  kegg:
+    host: "localhost"
+    port: "8087"
+    basepath: "/api"
+    protocol: "HTTPS"
+    truststore:
+      type: "JKS"
+      path: "truststore-servier-mule.jks"
+      password: "![Us5tc2ku44aJFdN0k9gqSujvB8/D3SuTwwLjCEKyxqw=]"
+  pharmaprojects:
+    host: "localhost"
+    port: "8088"
+    basepath: "/api"
+    protocol: "HTTPS"
+    truststore:
+      type: "JKS"
+      path: "truststore-servier-mule.jks"
+      password: "![Us5tc2ku44aJFdN0k9gqSujvB8/D3SuTwwLjCEKyxqw=]"
+jobs:
+  maxrecordsperbatch: "10000"
+  maxjobinfopollingiterations: "200"
+  milisecondsbetweenjobinfopollingiterations: "10000"

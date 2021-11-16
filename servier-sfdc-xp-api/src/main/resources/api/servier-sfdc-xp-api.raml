@@ -1,0 +1,780 @@
+#%RAML 1.0
+title: servier-sfdc-xp-api
+version: v3
+mediaType:  application/json
+
+securitySchemes:
+  basic-authentication:
+    type: Basic Authentication
+    displayName: Basic Authentication
+    description: Authentication scheme specified by IETF RFC2617. https://tools.ietf.org/html/rfc2617
+    describedBy:
+      headers:
+        Authorization:
+          type: string
+          example: eW91clVzZXJuYW1lOnlvdXJQYXNzd29yZA==
+      responses:
+        401:
+          description: Unauthorized or invalid Authorization header
+  ip-whitelisting:
+    type: x-ip-whitelisting
+    displayName: IP Whitelisting
+    description: Only whitelisted IPs are allowed to call this API.
+
+securedBy: [basic-authentication, ip-whitelisting]
+
+types:
+  protocol-version:
+    properties:
+      Name: string
+      ProtocolDescription__c: string
+      ProtocolVersionExternalId__c: string
+      Active__c: boolean
+      Version__c: integer
+      ProtocolName__c: string
+      Project__r:
+        properties:
+          Name: string
+      ProtocolDescriptionLong__c: string
+      Profiling__c: string
+      TypeName__c: string
+      TypeLabel__c: string
+      TECHProtocolVersionKey__c: string
+      Label__c: string
+      Title__c: string
+      Comments__c: string
+  protocol-parameter:
+    properties:
+      Name: string
+      ProtocolVersion__c: string
+      ProtocolParameterExternalId__c: string
+      ProtocolParameterShortName__c: string
+      ProtocolParameterDescription__c: string
+      ConcentrationUnit__c: string
+      Factor__c: string
+      FactorUnit__c: string
+      ParameterUnit__c: string
+  project: !include Datatypes/Project.raml
+  project-plan: !include Datatypes/ProjectPlan.raml
+
+    
+uses:
+  odata: libraries/odataLibrary.raml
+  model: odata.raml
+
+resourceTypes:
+  collection:
+    is: [odata.orderby, odata.top, odata.skip, odata.filter, odata.expand, odata.format, odata.select, odata.inlinecount]
+    get:
+      description: List of <<model | !pluralize>>
+      responses:
+        200:
+          body:
+            application/json:
+              type: <<model>>[]
+
+  member:
+    is: [odata.filter, odata.expand, odata.format, odata.select]
+    get:
+      description: Read <<model>>
+      responses:
+        200:
+          body:
+            application/json:
+              type: <<model>>
+
+/trials:
+  displayName: trials
+  type: { collection: { model: model.trial } }
+/drugs:
+  displayName: drugs
+  type: { collection: { model: model.drugs } }
+/links-spirs:
+  displayName: links-spirs
+  type: { collection: { model: model.links-spir } }
+/pdf-file-spirs:
+  displayName: pdf-file-spirs
+  type: { collection: { model: model.pdf-file-spir } }
+/scrip-news:
+  displayName: scrip-news
+  type: { collection: { model: model.scrip-news } }
+/articles-pubchems:
+  displayName: articles-pubchems
+  type: { collection: { model: model.articles-pubchems } }
+#  /{doSearch}:
+#    displayName: articles-pubchems
+#    type: { member: { model: model.articles-pubchems } }
+/articles-pubmeds:
+  displayName: articles-pubmeds
+  type: { collection: { model: model.articles-pubmeds } }
+#  /{PMID}:
+#    displayName: articles-pubmeds
+#    type: { member: { model: model.articles-pubmeds } }
+/articles-chembls:
+  displayName: articles-chembls
+  type: { collection: { model: model.articles-chembls } }
+#  /{dosearch}:
+#    displayName: articles-pubmeds
+#    type: { member: { model: model.articles-pubmeds } }
+/studies-seeds:
+  displayName: studies-seeds
+  type: { collection: { model: model.studies-seeds } }
+#  /{etudef_id}:
+#    displayName: studies-seeds
+#    type: { member: { model: model.studies-seeds } }
+/study-results:
+  displayName: study-results
+  type: { collection: { model: model.study-results } }
+#  /{ID}:
+#    displayName: study-result
+#    type: { member: { model: model.study-results } }
+/series-merlins:
+  displayName: series-merlins
+  type: { collection: { model: model.series-merlin } }
+#  /{series_id}:
+#    displayName: series-merlin
+#    type: { member: { model: model.series-merlin } }
+/molecules-merlins:
+  displayName: molecules-merlins
+  type: { collection: { model: model.molecules-merlin } }
+#  /{productName}:
+#    displayName: molecules-merlin
+#    type: { member: { model: model.molecules-merlin } }
+/molecules-herokus:
+  displayName: molecules-herokus
+  type: { collection: { model: model.molecules-heroku } }
+#  /{flowchartid}:
+#    displayName: molecules-heroku
+#    type: { member: { model: model.molecules-heroku } }
+/entries-keggs:
+  displayName: entries-keggs
+  type: { collection: { model: model.entries-kegg } }
+#  /{entry}:
+#    displayName: entries-kegg
+#    type: { member: { model: model.entries-kegg } }
+/entries-uniprots:
+  displayName: entries-uniprots
+  type: { collection: { model: model.entries-uniprot } }
+  /{id}:
+    displayName: entries-uniprot
+    type: { member: { model: model.entries-uniprot } }
+/substance-dry-availabilities:
+  displayName: substance-dry-availability
+  type: { collection: { model: model.substance-dry-availability } }
+/substance-liquid-availabilities:
+  displayName: substance-liquid-availability
+  type: { collection: { model: model.substance-liquid-availability } }
+/protocol-versions:
+  post:
+    body:
+      application/json:
+        type: protocol-version[]
+    responses:
+      201:
+        body:
+          application/json:
+            example: 
+              message: "Success"
+/protocol-parameters:
+  post:
+    body:
+      application/json:
+        type: protocol-parameter[]
+    responses:
+      201:
+        body:
+          application/json:
+            example:
+              message: "Success"
+
+/jobs:
+  /{jobId}:
+    uriParameters:
+      jobId:
+        type: string
+    /batches:
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+      /{batchId}:
+        uriParameters:
+          batchId:
+            type: string
+        get:
+          responses:
+            200:
+              body:
+                application/json:
+        /results:
+          get:
+            responses:
+              200:
+                body:
+                  application/csv:
+                  application/xml:
+                  application/json:
+
+/jobs-v2:
+  /{jobId}:
+    uriParameters:
+      jobId:
+        type: string
+    /successful-results:
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+    /failed-results:
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+
+/substances:
+  delete:
+    description: Delete Substance__c objects. ExternalId__cIn filter is used for hourly logical deletion propagations from Merlin. ExternalId__cNotIn is used for daily logical and physical deletions propagation.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/csv:
+        examples:
+          ExternalId__cIn: !include examples/delete-objects-external-id-in.csv
+          ExternalId__cNotIn: !include examples/delete-objects-external-id-not-in.csv
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  put:
+    description: Upsert Substance__c objects.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/json:
+      application/csv:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+
+/substances-SerialMode:
+  delete:
+    description: Delete Substance__c objects. ExternalId__cIn filter is used for hourly logical deletion propagations from Merlin. ExternalId__cNotIn is used for daily logical and physical deletions propagation.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/csv:
+        examples:
+          ExternalId__cIn: !include examples/delete-objects-external-id-in.csv
+          ExternalId__cNotIn: !include examples/delete-objects-external-id-not-in.csv
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  put:
+    description: Upsert Substance__c objects.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/json:
+      application/csv:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+
+/projects:
+  delete:
+    description: Delete Project__c objects. ExternalId__cIn filter is used for hourly logical deletion propagations from Merlin. ExternalId__cNotIn is used for daily logical and physical deletions propagation.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/csv:
+        examples:
+          ExternalId__cIn: !include examples/delete-objects-external-id-in.csv
+          ExternalId__cNotIn: !include examples/delete-objects-external-id-not-in.csv
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  put:
+    description: Upsert Project__c objects.
+    headers:
+      X-HTTP-Method-Override:
+        type: string
+        required: false
+    body:
+      application/json:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  get:
+    description: Select Project_c objects by field ProjectType__c
+    queryParameters:
+      ProjectType__c:
+        type: string
+        required: true
+        example: 'FDC'
+    responses:
+      200:
+        description: Salesforce selection by query param ProjectType__c
+        body:
+          application/json:
+            description: Salesforce Projects_c sObject Array
+            type: project[]
+            example: !include examples/get-projects.json
+
+/project-restricted-data:
+  description: Collection of ProjectRestrictedData__c sObject each grouping sensitive information about a project. It allows Salesforce administrator to control the audience of that sensitive information.
+  put:
+    description: Upsert ProjectRestrictedData__c objects.
+    headers:
+      X-HTTP-Method-Override:
+        description: Provide PATCH as value to perform an update rather than an upsert on Salesforce.
+        type: string
+        example: PATCH
+        required: false
+    body:
+      application/json:
+        description: Collection of sObjects to upsert or update.
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  delete:
+    description: Remove ProjectRestrictedData__c sObjects.
+    body:
+      application/csv:
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+      
+/projects-plan:
+  description: Collection of ProjectPlan__c sObject each grouping sensitive information about a project. It allows Salesforce administrator to control the audience of that sensitive information.
+  put:
+    description: Upsert ProjectPlan__c objects.
+    headers:
+      X-HTTP-Method-Override:
+        description: Provide PATCH as value to perform an update rather than an upsert on Salesforce.
+        type: string
+        example: PATCH
+        required: false
+    body:
+      application/json:
+        description: Collection of sObjects to upsert or update.
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  delete:
+    description: Remove ProjectPlan__c sObjects.
+    body:
+      application/csv:
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  get:
+    description: Select ProjectPlan_c objects by field ProjectType__c
+    queryParameters:
+      ProjectType__c:
+        type: string
+        required: true
+        example: 'FDC'
+    responses:
+      200:
+        description: Salesforce selection by query param ProjectType__c
+        body:
+          application/json:
+            description: Salesforce ProjectsPlan_c sObject Array
+            type: project-plan[]
+            example: !include examples/get-projects-plan.json
+
+/project-substances:
+  delete:
+    description: Delete ProjectSubstance__c objects. ExternalId__cIn filter is used for hourly logical deletion propagations from Merlin. ExternalId__cNotIn is used for daily logical and physical deletions propagation.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/csv:
+        examples:
+          ExternalId__cIn: !include examples/delete-objects-external-id-in.csv
+          ExternalId__cNotIn: !include examples/delete-objects-external-id-not-in.csv
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  put:
+    description: Upsert ProjectSubstance__c objects.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/json:
+      application/csv:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+
+/substance-restricted-accesses:
+  delete:
+    description: Delete SubstanceRestrictedAccess__c objects. ExternalId__cIn filter is used for hourly logical deletion propagations from Merlin. ExternalId__cNotIn is used for daily logical and physical deletions propagation.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/csv:
+        examples:
+          ExternalId__cIn: !include examples/delete-objects-external-id-in.csv
+          ExternalId__cNotIn: !include examples/delete-objects-external-id-not-in.csv
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  put:
+    description: Upsert SubstanceRestrictedAccess__c objects.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/json:
+      application/csv:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+
+/series:
+  delete:
+    description: Delete Serie__c objects. ExternalId__cIn filter is used for hourly logical deletion propagations from Merlin. ExternalId__cNotIn is used for daily logical and physical deletions propagation.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/csv:
+        examples:
+          ExternalId__cIn: !include examples/delete-objects-external-id-in.csv
+          ExternalId__cNotIn: !include examples/delete-objects-external-id-not-in.csv
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  put:
+    description: Upsert Serie__c objects.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/json:
+      application/csv:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+
+/series-SerialMode:
+  delete:
+    description: Delete Serie__c objects. ExternalId__cIn filter is used for hourly logical deletion propagations from Merlin. ExternalId__cNotIn is used for daily logical and physical deletions propagation.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/csv:
+        examples:
+          ExternalId__cIn: !include examples/delete-objects-external-id-in.csv
+          ExternalId__cNotIn: !include examples/delete-objects-external-id-not-in.csv
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  put:
+    description: Upsert Serie__c objects.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/json:
+      application/csv:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+
+/substance-series:
+  delete:
+    description: Delete SubstanceSerie__c objects. ExternalId__cIn filter is used for hourly logical deletion propagations from Merlin. ExternalId__cNotIn is used for daily logical and physical deletions propagation.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/csv:
+        examples:
+          ExternalId__cIn: !include examples/delete-objects-external-id-in.csv
+          ExternalId__cNotIn: !include examples/delete-objects-external-id-not-in.csv
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  put:
+    description: Upsert SubstanceSerie__c objects.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/json:
+      application/csv:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+
+/parent-substance-categories:
+  delete:
+    description: Delete ParentSubstanceCat__c objects. ExternalId__cIn filter is used for hourly logical deletion propagations from Merlin. ExternalId__cNotIn is used for daily logical and physical deletions propagation.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/csv:
+        examples:
+          ExternalId__cIn: !include examples/delete-objects-external-id-in.csv
+          ExternalId__cNotIn: !include examples/delete-objects-external-id-not-in.csv
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  put:
+    description: Upsert ParentSubstanceCat__c objects.
+    headers:
+      Content-Length:
+        type: number
+        minimum: 1
+    body:
+      application/json:
+      application/csv:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+/phases:
+  put:
+    description: Upsert Phase__c sObjects.
+    body:
+      application/json:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  delete:
+    description: Remove Phase__c sObjects.
+    body:
+      application/csv:
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+/phases-projection:
+  put:
+    description: Upsert PhaseProjection__c sObjects.
+    body:
+      application/json:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  delete:
+    description: Remove PhaseProjection__c sObjects.
+    body:
+      application/csv:
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+/patents:
+  put:
+    description: Upsert Patent__c sObjects.
+    body:
+      application/json:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+  delete:
+    description: Remove Patent__c sObjects.
+    body:
+      application/csv:
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+/biospace-news:
+  put:
+    description: Upsert Biospace news.
+    body:
+      application/json:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+/programs:
+  put:
+    description: Upsert programs, it is used for all program including subprograms.
+    body:
+      application/json:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+
+/costrd-projection:
+  post:
+    description: Insert CostRDProjection__c sObjects.
+    body:
+      application/json:
+    responses:
+      202:
+        description: Salesforce insert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info   
+  delete:
+    description: Remove CostRDProjection__c sObjects.
+    body:
+      application/csv:
+    responses:
+      202:
+        description: Salesforce deletion job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info
+/sObjects:
+  /{sTable}:
+    get:
+      description: Select all the records from a Salesforce object
+      queryParameters:
+        sFields:
+          type: string
+          required: false
+          description: values you want to select. By default we retreive Id.
+          example: "Id, Name, Surname"
+      responses:
+        200:
+          body:
+            application/json:
+
+    /{sFilterField}:
+      get:
+        queryParameters:
+          sFilterValue:
+            type: string
+            required: true
+            description: value of the sField filter
+            example: "S001702_A"
+          sFields:
+            type: string
+            required: false
+            description: values you want to select. By default we retreive Id.
+            example: "Id, Name, Surname"
+        responses:
+          200:
+            body:
+              application/json:
+/users:
+  put:
+    description: Upsert User sObjects.
+    body:
+      application/json:
+    responses:
+      202:
+        description: Salesforce upsert job is scheduled
+        body:
+          application/json:
+            description: Salesforce job info    

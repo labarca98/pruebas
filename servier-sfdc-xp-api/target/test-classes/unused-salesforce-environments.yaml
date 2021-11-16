@@ -1,0 +1,14 @@
+#salesforce:
+#  clientId: "3MVG96mGXeuuwTZjF7SkoCxfQt2FZYz8ppKbY5ZgBl1FmNjIjWsUjW8GXTus3tRCh68.iMKZZJrR6AgMWNJpC"
+#  clientSecret: "3B1D6772F359634B7EDD85712E4F9474894D362FFE1DFEA974B67C200E7396FE"
+#  username: "mulesoft.integration@servier.dev"
+#  password: "yWviI00&*mqb"
+#  token: "GyxNuYPqLZa2hQcsoXG9C5377"
+#  tokenendpoint: "https://servier--dev.my.salesforce.com/services/oauth2/token"
+#salesforce:
+#  clientId: "3MVG9LzKxa43zqdJNAcAuxRFJduUtRZcehBWJjzeODfXesT3HDoBlEdLOm_fgI8mqMWr12670dqd6HelAWwhe"
+#  clientSecret: "27B8DB0354583D560C622E2C715A486EFCA02078DD1569F5E8483D430F913D57"
+#  username: "mulesoft.integration@servier.uat"
+#  password: "hJmwu8l2k$7f"
+#  token: "zXV7ezjldfjhDT06QvrXfNdo"
+#  tokenendpoint: "https://servier--uat.my.salesforce.com/services/oauth2/token"

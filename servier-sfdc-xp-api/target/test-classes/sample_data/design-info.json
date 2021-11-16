@@ -1,0 +1,38 @@
+{
+  "sampleData": {
+    "eed65f59-913d-4313-b3df-9e8154c4acbe": {
+      "payload": "sample_data/merlin-substances-test-response.json"
+    },
+    "1575d118-32d8-4aee-811c-2d315ecd316c": {
+      "payload": "sample_data/list_substance__c.dwl",
+      "vars-merlinSubstances": "sample_data/list_object.dwl"
+    },
+    "3c7d5439-f022-4841-9d2d-631b5231aced": {
+      "vars-substances": "sample_data/list_object_1.dwl"
+    },
+    "4ae68f33-fd38-4923-9146-f4cac5e4f8ee": {
+      "vars-externalIdToIdMap": "sample_data/unknown.dwl",
+      "vars-externalIdIn": "sample_data/unknown_1.dwl",
+      "payload": "sample_data/list_Substance__c_1.dwl",
+      "vars-externalIdNotIn": "sample_data/list_defaultstringtype.dwl"
+    },
+    "d37bf2b5-3b8b-46af-8798-f33fa40d1da5": {
+      "payload": "sample_data/unknown_2.dwl"
+    },
+    "c14d03b6-8de7-43ff-8ee6-2b95feac73e5": {
+      "payload": "sample_data/list_object_2.dwl"
+    },
+    "d60a0163-1a06-4956-b762-7d947e8679eb": {
+      "payload": "sample_data/json.json"
+    },
+    "2668a5af-c688-4b53-ad1f-7fb0e450e8a7": {
+      "payload": "sample_data/java.dwl",
+      "vars-acumVar": "sample_data/list_java_6.dwl",
+      "vars-Users": "sample_data/list_java_7.dwl"
+    },
+    "b49a3b90-3dbd-4a22-9572-f2dc48d38278": {
+      "payload": "sample_data/java_1.dwl",
+      "vars-Users": "sample_data/list_java_1.dwl"
+    }
+  }
+}

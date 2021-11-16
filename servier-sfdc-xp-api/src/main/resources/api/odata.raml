@@ -1,0 +1,1181 @@
+#%RAML 1.0 Library
+uses:
+  odata: libraries/odataLibrary.raml
+
+types:
+  articles-pubmeds:
+    (odata.remote): ArticlesPubmeds
+    properties:
+      PMID:
+        type: number
+        (odata.key): true
+        (odata.nullable): false
+        format: int32
+      Authors:
+        type: string
+        (odata.nullable): true
+        (odata.key): false
+      Title:
+        type: string
+        (odata.nullable): true
+        (odata.key): false
+      DateRef:
+        type: string
+        (odata.nullable): true
+        (odata.key): false
+      SimilarArticlesLink:
+        type: string
+        (odata.nullable): true
+        (odata.key): false
+      ArticleLink:
+        type: string
+        (odata.nullable): true
+        (odata.key): false
+        
+  articles-pubchems:
+    (odata.remote): ArticlesPubchems
+    properties:
+      doSearch:
+        type: string
+        (odata.key): true
+        (odata.nullable): false
+      compoundtab:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      compoundcount:
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      substancetab:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      substancecount:
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      genetab:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      genecount:
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      proteintab:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      proteincount:
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      bioassaystab:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      bioassayscount:
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      literaturetab:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      literaturecount:
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      patenttab:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      patentcount:
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+        
+  articles-chembls:
+    (odata.remote): ArticlesChembls
+    properties:
+      doSearch:
+        type: string
+        (odata.key): true
+        (odata.nullable): false
+      allResultsUrl: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      allResultsCount: 
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      compoundsUrl:
+        (odata.nullable): true
+        (odata.key): false
+        type: string 
+      compoundsCount: 
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      targetsUrl: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      targetsCount: 
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      assaysUrl: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      assaysCount: 
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      documentsUrl:
+        (odata.nullable): true
+        (odata.key): false
+        type: string 
+      documentsCount:
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32 
+      cellsUrl: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      cellsCount: 
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      tissuesUrl: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      tissuesCount:
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+
+  studies-seeds:
+    (odata.remote): StudyResult
+    properties:
+      resele_nomxpr:
+        (odata.key): false
+        (odata.nullable): false
+      documnts_dcmtblob2:
+        (odata.key): false
+        (odata.nullable): false
+      resele_nomunipar:
+        (odata.key): false
+        (odata.nullable): false
+      etudef_numverpro:
+        (odata.key): false
+        (odata.nullable): false
+      etudef_numetu:
+        (odata.key): false
+        (odata.nullable): false
+      etudef_codlotpdt:
+        (odata.key): false
+        (odata.nullable): false
+      etudef_nompdt:
+        (odata.key): false
+        (odata.nullable): false
+      resele_valfac:
+        (odata.key): false
+        (odata.nullable): false
+      resele_protexp:
+        (odata.key): false
+        (odata.nullable): false
+      resele_comres:
+        (odata.key): false
+        (odata.nullable): false
+      resele_id:
+        (odata.key): false
+        (odata.nullable): false
+      etudef_tripletpdt:
+        (odata.key): false
+        (odata.nullable): false
+      resele_nomunicnc:
+        (odata.key): false
+        (odata.nullable): false
+      etudef_titpro:
+        (odata.key): false
+        (odata.nullable): false
+      etudef_datetu:
+        (odata.key): false
+        (odata.nullable): false
+      resele_valres:
+        (odata.key): false
+        (odata.nullable): false
+      resele_nomfac:
+        (odata.key): false
+        (odata.nullable): false
+      resele_valcnc:
+        (odata.key): false
+        (odata.nullable): false
+      resele_datxpr:
+        (odata.key): false
+        (odata.nullable): false
+      resele_nompar:
+        (odata.key): false
+        (odata.nullable): false
+      etudef_idperle:
+        (odata.key): false
+        (odata.nullable): false
+      etudef_codpro:
+        (odata.key): false
+        (odata.nullable): false
+      resele_nomunifac:
+        (odata.key): false
+        (odata.nullable): false
+      etudef_id:
+        (odata.key): true
+        (odata.nullable): false
+
+  study-results:
+    (odata.remote): StudyResult
+    properties:
+      codressyn:
+        type: string
+        (odata.key): true
+        (odata.nullable): false
+      nomfacres:
+        type: string
+        (odata.nullable): true
+        (odata.key): false
+      valqatpar:
+        (odata.nullable): true
+        (odata.key): false
+      datcreetu:
+        (odata.nullable): true
+        (odata.key): false
+      nomunicnc:
+        (odata.nullable): true
+        (odata.key): false
+      cncpdt:
+        (odata.nullable): true
+        (odata.key): false
+      datxptetu:
+        (odata.nullable): true
+        (odata.key): false
+      nomunipar:
+        (odata.nullable): true
+        (odata.key): false
+      nom:
+        (odata.nullable): true
+        (odata.key): false
+      codpro:
+        (odata.nullable): true
+        (odata.key): false
+      nompdt:
+        (odata.nullable): true
+        (odata.key): false
+      nomser:
+        (odata.nullable): true
+        (odata.key): false
+      datmodetu:
+        (odata.nullable): true
+        (odata.key): false
+      nompar:
+        (odata.nullable): true
+        (odata.key): false
+      nomunifac:
+        (odata.nullable): true
+        (odata.key): false
+      resultatsynth:
+        (odata.nullable): true
+        (odata.key): false
+      datvldetu:
+        (odata.nullable): true
+        (odata.key): false
+      codetu:
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      tirpletTst:
+        (odata.nullable): true
+        (odata.key): false
+      valres:
+        (odata.nullable): true
+        (odata.key): false
+      datetu:
+        (odata.nullable): true
+        (odata.key): false
+      nometu:
+        (odata.nullable): true
+        (odata.key): false
+      datmodres:
+        (odata.nullable): true
+        (odata.key): false
+      valdps2fmt:
+        (odata.nullable): true
+        (odata.key): false 
+      valresfmt:
+        (odata.nullable): true
+        (odata.key): false 
+      valnbr: 
+        (odata.nullable): true
+        (odata.key): false
+      nomdps:
+        (odata.nullable): true
+        (odata.key): false 
+      valfac:
+        (odata.nullable): true
+        (odata.key): false 
+      valdps1fmt: 
+        (odata.nullable): true
+        (odata.key): false
+      valqatstt: 
+        (odata.nullable): true
+        (odata.key): false
+      obtres:
+        (odata.nullable): true
+        (odata.key): false
+      typeprpar:
+        (odata.nullable): true
+        (odata.key): false
+        
+  series-merlin:
+    (odata.remote): MoleculesMerlin
+    properties:
+      serie_id:
+        (odata.key): true
+        (odata.nullable): false
+      product_id:
+        (odata.nullable): true
+        (odata.key): false
+      serie_name:
+        (odata.nullable): true
+        (odata.key): false
+        
+  molecules-merlin:
+    (odata.remote): MoleculesMerlin
+    properties:
+      product_id:
+        (odata.key): true
+        (odata.nullable): false
+      datmod:
+        (odata.nullable): true
+        (odata.key): false
+      datcre:
+        (odata.nullable): true
+        (odata.key): false
+      product_name:
+        (odata.nullable): true
+        (odata.key): false
+      product_weight:
+        (odata.nullable): true
+        (odata.key): false
+      convertion_factor:
+        (odata.nullable): true
+        (odata.key): false
+      product_weight_corrected:
+        (odata.nullable): true
+        (odata.key): false
+      project_code:
+        (odata.nullable): true
+        (odata.key): false
+      parent_name:
+        (odata.nullable): true
+        (odata.key): false
+      product_molfile:
+        (odata.nullable): true
+        (odata.key): false
+      product_image:
+        (odata.nullable): true
+        (odata.key): false
+      series_name:
+        (odata.nullable): true
+        (odata.key): false
+        
+  molecules-heroku:
+    (odata.remote): MoleculesHeroku
+    properties:
+      flowchartid:
+        type: string
+        (odata.key): true
+        (odata.nullable): false
+      id:
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      molecule:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      passedok: 
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      r1: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r10: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r11: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r12: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r13: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r14: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r15: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r16: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r17: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r18: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r19: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r2: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r20: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r21: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r22: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r23: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r24: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r3: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r4: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r5: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r6: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r7: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r8: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      r9: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t1:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t10: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t11: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t12: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t13: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t14: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t15: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t16: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t17: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t18: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t19: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t2: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t20: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t21: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t22: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t23: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t24: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t3: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t4: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t5: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t6: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t7: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t8: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      t9: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v1:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v10: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v11: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v12: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v13: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v14: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v15: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v16: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v17: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v18: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v19: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v2: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v20: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v21: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v22: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v23: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v24: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v3: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v4: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v5: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v6: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v7: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v8: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      v9: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr1: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr10:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr11:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr12:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr13:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr14:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr15:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr16:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr17:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr18:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr19:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr2:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr20:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr21:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr22:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr23:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr24:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr3:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr4:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr5:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr6:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr7:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr8:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      vr9:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      maxlevel:
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+      serie:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      finalscore:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+        
+  entries-kegg:
+    (odata.remote): EntriesKegg
+    properties:
+      entry:
+        type: string
+        (odata.key): true
+        (odata.nullable): false
+      database:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      name:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      definition:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      sourceLink:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+        
+  entries-uniprot:
+    (odata.remote): EntriesKegg
+    properties:
+      id:
+        type: string
+        (odata.key): true
+        (odata.nullable): false
+      entryLink: 
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      name:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      reviewed:
+        (odata.nullable): true
+        (odata.key): false
+        type: boolean
+      proteinNames:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      geneNames:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      organism:
+        (odata.nullable): true
+        (odata.key): false
+        type: string
+      length:
+        (odata.nullable): true
+        (odata.key): false
+        type: number
+        format: int32
+
+  substance-dry-availability:
+    (odata.remote): SubstanceDryAvailabilityMosaic
+    properties:
+      ALIQUOTUNIT:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      AMOUNTUNIT:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      CODLOT:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      CODPDT:
+        type: string
+        (odata.key): true
+        (odata.nullable): false
+      LARGESTALIQUOTESTIMATE:
+        type: number
+        (odata.key): false
+        (odata.nullable): false
+      Substance:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      TOTALAVAILABLEAMOUNT:
+        type: number
+        (odata.key): false
+        (odata.nullable): false
+      LOTDEF_REFLOT:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      GLOFRSDEF_NOMFRS:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      LOTDEF_TRIPLET:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+
+  substance-liquid-availability:
+    (odata.remote): SubstanceDryAvailabilityMosaic
+    properties:
+      ALIQUOTUNIT:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      AMOUNTUNIT:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      CODLOT:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      CODPDT:
+        type: string
+        (odata.key): true
+        (odata.nullable): false
+      CONCENTRATION:
+        type: number
+        (odata.key): false
+        (odata.nullable): false
+      CONCUNITTYPE:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      FORM:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      LARGESTALIQUOTESTIMATE:
+        type: number
+        (odata.key): false
+        (odata.nullable): false
+      SOLVENTCONC:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      SOLVENTID:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      Substance:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      TOTALAVAILABLEAMOUNT:
+        type: number
+        (odata.key): false
+        (odata.nullable): false
+      LOTDEF_REFLOT:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      GLOFRSDEF_NOMFRS:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+      LOTDEF_TRIPLET:
+        type: string
+        (odata.key): false
+        (odata.nullable): false
+
+  trial:
+    (odata.remote): trial
+    properties:
+      trialId:
+        type: number
+        (odata.key): true
+        (odata.nullable): false
+      trialTitle:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      trialStatus:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      trialStartDate:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      trialPhase:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      trialPrimaryCompletionDate:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      copyrightNotice:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      trialSponsorsNames:
+        type: string
+        description: Comma separated values
+        (odata.key): false
+        (odata.nullable): true
+      trialTherapeuticAreasTrialDiseasesNames:
+        type: string
+        description: Comma separated values
+        (odata.key): false
+        (odata.nullable): true
+      trialPrimaryDrugsTestedDrugPrimaryName:
+        type: string
+        description: Comma separated values
+        (odata.key): false
+        (odata.nullable): true
+      trialPrimaryDrugsTestedMechanismsOfActionDirectMechanism:
+        type: string
+        description: Comma separated values
+        (odata.key): false
+        (odata.nullable): true
+      trialDetailsWebsiteUrl:
+        type: string
+        description: Link to details of the trial on Informa website
+        (odata.key): false
+        (odata.nullable): true
+
+  scrip-news:
+    (odata.remote): ScripNews
+    properties:
+      id:
+        type: string
+        (odata.key): true
+        (odata.nullable): false
+      title:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      description:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      updated:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      pubDate:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      link:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      authorsName:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+
+  drugs:
+    (odata.remote): Drugs
+    properties:
+      drugId:
+        type: string
+        (odata.key): true
+        (odata.nullable): false
+      $type:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      copyrightNotice:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      targetNames:
+        type: string
+        description: Comma separated values
+        (odata.key): false
+        (odata.nullable): true
+      globalStatus:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      originatorName:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      originatorStatus:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      originatorCompanyKey:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      indicationGroupsIndicationsDiseaseNames:
+        type: string
+        description: Comma separated values
+        (odata.key): false
+        (odata.nullable): true
+      drugPrimaryName:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      mechanismsOfActionDirectMechanisms:
+        type: string
+        description: Comma separated values
+        (odata.key): false
+        (odata.nullable): true
+      origin:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      updatedDate:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      drugDetailsWebsiteUrl:
+        type: string
+        description: Link to details of the drug on Informa website
+        (odata.key): false
+        (odata.nullable): true
+  links-spir:
+    (odata.remote): Links
+    properties:
+      codetu:
+        type: number
+        (odata.key): true
+        (odata.nullable): false
+      codexp:
+        type: number
+        (odata.key): false
+        (odata.nullable): true
+      codrgpexp:
+        type: number
+        (odata.key): false
+        (odata.nullable): true
+      filename:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+      label:
+        type: string
+        (odata.key): false
+        (odata.nullable): true
+  pdf-file-spir:
+    (odata.remote): PDFFile
+    properties:
+      filename:
+        (odata.key): true
+        (odata.nullable): false
+      pdf_file_base64:
+        (odata.key): false
+        (odata.nullable): false
