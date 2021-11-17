@@ -3,6 +3,3 @@ mvn sonar:sonar
 -Dsonar.host.url=http://localhost:9000 
 -Dsonar.login=tokenLogin 
 -Dsonar.sources=src/main,pom.xml
-
-
-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
