@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="71c6230b-499b-47af-b68b-5a2f3bcfcbc7" basePath="/" >
+		<http:listener-connection host="0.0.0.0" port="8082" />
+	</http:listener-config>
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="3d797905-2d0a-4402-80f3-779654f1cc9c" basePath="/">
+		<http:listener-connection host="0.0.0.0" port="8083" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="9e82b913-2776-4e78-8960-99ee1da7b9e0" basePath="/pruebas">
+		<http:request-connection host="localhost" port="8083" />
+	</http:request-config>
+	<vm:config name="VM_Config" doc:name="VM Config" doc:id="cc290b70-5724-45a8-b7ea-e2a12287c04b" >
+		<vm:queues >
+			<vm:queue queueName="auxQ" />
+		</vm:queues>
+	</vm:config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="829a40a3-031e-4e68-992e-cd4ecb8385d4" >
+		<salesforce:basic-connection username="tdhuj" password="set6ue " securityToken="aswerysayh" url="https://piasfgnipb.ainfoiba/vsdvib/oibvs_inbv/" />
+	</salesforce:sfdc-config>
+	<flow name="pruebasFlow" doc:id="af983fa8-e10b-4c34-b2f2-fd84b9dc4597" initialState="stopped">
+		<http:listener doc:name="Listener" doc:id="5b20e447-21e5-43e7-8e30-beb9783f278d" config-ref="HTTP_Listener_config" path="/pruebas"/>
+		<set-variable value="auxVal" doc:name="variablePrueba = auxVal" doc:id="e79fa462-d9a8-4ca5-91bc-ef70db6e28d7" variableName="variablePrueba"/>
+		<set-payload value='#[%dw 2.0&#10;output application/xml&#10;---&#10;sale: {&#10;	transaction_id: "092h4-419-349",&#10;	item: "Car Seat",	&#10;	price: 99&#10;}]' doc:name="payload = auxPayload" doc:id="6dc27651-f6d6-449d-9b76-503cdc407e8f" />
+		<ee:transform doc:name="Transform Message" doc:id="3b05e0bf-b8fb-44e2-9a38-dbbe7654d067" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{vendor: "Acme"} ++ payload.sale]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<try doc:name="Try" doc:id="3c660e3e-d3c4-4438-b1f5-c0efdf60fb01" >
+			<validation:is-number numberType="INTEGER" doc:name="Is number" doc:id="618ffb3a-3110-4579-9306-86aa7c1d1e68" value="#[payload]" />
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="1f7284f4-cb26-4301-ac3a-513a968cd84c" type="ANY">
+					<set-payload value='#["insideHandlerPropagate" ++ vars.variablePrueba]' doc:name="Set Payload" doc:id="c7159f6a-3ca2-47aa-8a43-506a327922f6" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<flow-ref doc:name="Flow Reference" doc:id="c9b98057-ad5d-45c7-95ca-cc4b224fd194" name="Copy_of_Copy_of_pruebasFlow1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="9d574e11-ee73-403f-b26d-4be7913db30c" />
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f0ced69c-5866-40e8-8710-bf2abd0dc63e" type="ANY">
+			<set-payload value="OutSideHandlerContinue" doc:name="Set Payload" doc:id="1b0491ec-baf5-4119-b1c5-193c45efbefb" />
+		</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="Copy_of_pruebasFlow3" doc:id="c090aaf5-2002-4001-ad35-ffdc5f8b638f" initialState="started">
+		<http:listener doc:name="Copy_of_Listener" doc:id="97a54c52-8e05-474f-b9d5-5e6ef86fcc0e" config-ref="HTTP_Listener_config" path="/pruebas" />
+		<set-variable value="auxVal" doc:name="Copy_of_variablePrueba = auxVal" doc:id="a2aa6357-d516-464d-829d-74b5c844cf1d" variableName="variablePrueba" />
+		<set-payload value='#["auxPayload"]' doc:name="Copy_of_payload = auxPayload" doc:id="bee944ff-a84d-4d5b-ae03-e187ae572056" />
+		<flow-ref doc:name="Copy_of_Flow Reference" doc:id="a2ab9fad-1066-42b2-a6a0-c76ac2133623" name="Copy_of_Copy_of_pruebasFlow1" />
+		<set-payload value="success - main flow" doc:name="Set Payload" doc:id="db9d15d2-c7c7-4575-a4b4-ef6d4ca97452" />
+		<logger level="INFO" doc:name="Copy_of_Logger" doc:id="ce93eb3c-4e22-433c-b63c-c68c60c503ad" />
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="Copy_of_On Error Continue" doc:id="505da994-a827-45d6-8cac-de12e8a2bebe" type="ANY">
+				<set-payload value="Error - main flow" doc:name="Copy_of_Set Payload" doc:id="c00716a3-c18d-4a85-8dc4-be0d31261715" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="Copy_of_pruebasFlow" doc:id="dcff6b97-edf7-4975-931c-7c4e48ddcbdd" initialState="stopped">
+		<http:listener doc:name="Copy_of_Listener" doc:id="28e080eb-24e7-490e-a132-eb6bfda9fbc9" config-ref="HTTP_Listener_config" path="/pruebas" />
+		<set-variable value="auxVal" doc:name="Copy_of_variablePrueba = auxVal" doc:id="caf0d281-4dc4-498c-bee1-a114f6ad577a" variableName="variablePrueba" />
+		<set-payload value='#["auxPayload"]' doc:name="Copy_of_payload = auxPayload" doc:id="66f68547-7fc5-4c3c-b66d-6db4ed2a3d7f" />
+		<choice doc:name="Choice" doc:id="b3d2da56-db3a-4d71-97f0-7c92c9ab0ce9" >
+			<when expression="true">
+				<set-payload value='#[payload ++ "1"]' doc:name="Set Payload" doc:id="b8d416ca-598d-43e5-bf3d-7e370b93bc62" />
+			</when>
+			<when expression="#[true]">
+				<set-payload value='#[payload ++ "2"]' doc:name="Set Payload" doc:id="f7a7ea34-c048-44fb-a404-9fc9347f4035" />
+			</when>
+			<otherwise >
+				<set-payload value='#[payload ++ "boom"]' doc:name="Set Payload" doc:id="310352a2-e757-4367-9c14-b2a7a32b1599" />
+			</otherwise>
+		</choice>
+		<http:request method="POST" doc:name="Request" doc:id="e0425beb-adc7-4a45-8f53-e8d31f3bfd97" config-ref="HTTP_Request_configuration" path="/"/>
+		<logger level="INFO" doc:name="Copy_of_Logger" doc:id="47b36240-0f35-4808-8e9f-e93dc786dbd4" />
+	</flow>
+	<flow name="Copy_of_pruebasFlow1" doc:id="7c481a8c-c054-4e88-bc37-d3119458f9d7" initialState="stopped">
+		<http:listener doc:name="Copy_of_Listener" doc:id="b523f10b-30ef-425e-bfde-02bd1a85f13c" config-ref="HTTP_Listener_config" path="/pruebas" />
+		<set-variable value="auxVal" doc:name="Copy_of_variablePrueba = auxVal" doc:id="01635cb3-a165-407f-a07a-d69698208a36" variableName="variablePrueba" />
+		<set-payload value='#["auxPayload"]' doc:name="Copy_of_payload = auxPayload" doc:id="db83cb30-b6e3-4185-9863-aab0ec9c7131" />
+		<vm:publish-consume doc:name="Publish consume" doc:id="80d9c86c-4a3b-4149-82e7-d0fc1f98a389" config-ref="VM_Config" queueName="auxQ"/>
+		<logger level="INFO" doc:name="Copy_of_Logger" doc:id="42d77436-0edf-4ce4-8d53-655815b14b97" />
+	</flow>
+	<flow name="Copy_of_pruebasFlow2" doc:id="8fb92b71-fd4f-42d9-b78d-0b02b937282a" >
+		<http:listener doc:name="Copy_of_Listener" doc:id="666d2a1e-3884-4bcd-b861-6c972cd257a4" config-ref="HTTP_Listener_config1" path="/pruebas" />
+		<set-payload value='#[%dw 2.0&#10;output application/json&#10;--- &#10;{llamado: "llamado"}]' doc:name="Set Payload" doc:id="2b0cdbe5-7222-4959-b625-e1814c4ff16e" />
+		<logger level="INFO" doc:name="Logger" doc:id="48924842-f163-4591-80b0-a9daad0efe9b" />
+	</flow>
+	<flow name="Copy_of_Copy_of_pruebasFlow" doc:id="b4515c8f-e93c-4c9d-ab3b-7d29f9a10e33" >
+		<vm:listener queueName="auxQ" doc:name="Listener" doc:id="c8171fcc-7f30-40d2-85c9-fda1642b5ffb" config-ref="VM_Config"/>
+		<set-payload value='#[%dw 2.0&#10;output application/json&#10;--- &#10;{llamado: "llamado"}]' doc:name="Copy_of_Set Payload" doc:id="85f92a87-bfe9-4b7b-8e91-712e779db5aa" />
+		<logger level="INFO" doc:name="Copy_of_Logger" doc:id="4dd76d5f-89e7-47d5-844f-7fb3d5b78405" />
+	</flow>
+	<flow name="Copy_of_Copy_of_pruebasFlow1" doc:id="0e8db56b-7139-45f2-898a-bdad72e22a58" >
+		<set-payload value='#[%dw 2.0&#10;output application/json&#10;--- &#10;{llamado: "llamado"}]' doc:name="Copy_of_Set Payload" doc:id="2ffe8ffc-a202-487e-aeca-a6ed3c8d48ee" />
+		<logger level="INFO" doc:name="Copy_of_Logger" doc:id="8aeb5fcb-4c3e-4711-8bb0-844ecbe9cae6" />
+		<validation:is-number numberType="INTEGER" doc:name="Is number" doc:id="0f352468-831a-4a51-977b-a3fd2d44d3c7" value="#[payload]"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e5d161b9-eecb-41b7-b99f-27e61aec21a9" >
+				<set-payload value="Error - private flow" doc:name="Set Payload" doc:id="8a2c5044-31fb-4144-a855-bff03639fd8f" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="pruebasFlow1" doc:id="73fa74f0-bfc4-48c6-bab5-cacafef52806" initialState="stopped">
+		<http:listener doc:name="Listener" doc:id="ff37f628-2604-40e2-8f70-c11aafddd20c" config-ref="HTTP_Listener_config" path="/pruebas"/>
+		<set-payload value="#[['a','b','c','d','e']]" doc:name="Set Payload" doc:id="023e9f60-dea0-461c-a7fe-c3f229bebe25" />
+		<batch:job jobName="pruebasBatch_Job" doc:id="650e6348-d5c2-4d0a-9bd1-59990bf866f1" >
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="5aaf248a-195e-4b6b-b6d0-104d087338d3" >
+					<ee:transform doc:name="Transform Message" doc:id="0ba674b2-89e1-4a1a-8273-8abff806a555" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+upper(payload)]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="046ac9e3-236d-4274-b636-8d58257ee13a" size="3">
+						<logger level="INFO" doc:name="Logger" doc:id="4cd8cd9c-be1c-46d2-9632-6a9bdc29cb7a" message="#[output application/json --- payload]"/>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+		</batch:job>
+	</flow>
+	<flow name="pruebasFlow2" doc:id="704f9ebf-e501-4f2b-bc15-4ba243502cb6" >
+		<salesforce:query doc:name="Query" doc:id="ad3b9757-b679-45f6-bd7f-f4c90349fc46" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[Select * from Mongon0asdhf]]></salesforce:salesforce-query>
+		</salesforce:query>
+	</flow>
+</mule>
