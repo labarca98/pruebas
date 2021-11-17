@@ -1,0 +1,5 @@
+mvn sonar:sonar 
+-Dsonar.projectKey=projectname 
+-Dsonar.host.url=http://localhost:9000 
+-Dsonar.login=tokenLogin 
+-Dsonar.sources=src/main,pom.xml
